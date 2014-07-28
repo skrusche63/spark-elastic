@@ -1,0 +1,171 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <groupId>spark-elastic</groupId>
+  <artifactId>spark-elastic</artifactId>
+  <version>0.0.1-SNAPSHOT</version>
+  <name>Spark-ELASTIC</name>
+  <description>This project combines Apache Spark and Elasticsearch to enable mining &amp; prediction for Elasticsearch.</description>
+  <inceptionYear>2010</inceptionYear>
+  <licenses>
+    <license>
+      <name>GPL v3</name>
+      <url>http://....</url>
+      <distribution>repo</distribution>
+    </license>
+  </licenses>
+
+  <properties>
+    <maven.compiler.source>1.6</maven.compiler.source>
+    <maven.compiler.target>1.6</maven.compiler.target>
+    <encoding>UTF-8</encoding>
+    <scala.tools.version>2.10</scala.tools.version>
+    <scala.version>2.10.0</scala.version>
+  </properties>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.scala-lang</groupId>
+      <artifactId>scala-library</artifactId>
+      <version>${scala.version}</version>
+    </dependency>
+
+    <!-- Test -->
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.11</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.specs2</groupId>
+      <artifactId>specs2_${scala.tools.version}</artifactId>
+      <version>1.13</version>
+      <scope>test</scope>
+    </dependency>
+
+    <dependency>
+      <groupId>org.scalatest</groupId>
+      <artifactId>scalatest_${scala.tools.version}</artifactId>
+      <version>2.0.M6-SNAP8</version>
+      <scope>test</scope>
+    </dependency>
+
+    <!-- spark 1.0.1 -->
+    <dependency>
+	  <groupId>org.apache.spark</groupId>
+	  <artifactId>spark-core_2.10</artifactId>
+	  <version>1.0.1</version>
+	  <exclusions>
+	    <!-- 
+	    Apache Sparks uses an elder version of jackson-mapper-asl (1.01), which
+	    is in conflict with jackson-core-asl 1.8.8, used by ES Hadoop
+	     -->
+        <exclusion>
+          <groupId>org.codehaus.jackson</groupId>
+          <artifactId>jackson-mapper-asl</artifactId>
+        </exclusion>
+	  </exclusions>
+    </dependency>
+
+    <!-- elasticsearch hadoop -->
+    <dependency>
+      <groupId>org.elasticsearch</groupId>
+      <artifactId>elasticsearch-hadoop</artifactId>
+      <version>2.0.0</version>
+    </dependency>
+
+    <!-- elastic search -->
+    <dependency>
+      <groupId>org.elasticsearch</groupId>
+      <artifactId>elasticsearch</artifactId>
+      <version>1.3.0</version>      
+    </dependency>  
+    
+    <!-- json4s -->
+    <dependency>
+	  <groupId>org.json4s</groupId>
+	  <artifactId>json4s-native_2.10</artifactId>
+	  <version>3.2.10</version>
+    </dependency>
+    
+    <!--  spray 1.2.0 -->
+    <dependency>
+      <groupId>io.spray</groupId>
+      <artifactId>spray-client</artifactId>
+      <version>1.2.0</version>
+    </dependency>  
+
+    <dependency>
+      <groupId>io.spray</groupId>
+      <artifactId>spray-httpx</artifactId>
+      <version>1.2.0</version>
+    </dependency>  
+
+    <!-- akka 2.2.3 -->
+    <dependency>
+      <groupId>com.typesafe.akka</groupId>
+      <artifactId>akka-actor_2.10</artifactId>
+      <version>2.2.3</version>
+    </dependency>
+   
+  </dependencies>
+
+  <repositories>
+    <repository>
+      <id>spray repo</id>
+      <name>Spray Repository</name>
+      <url>http://repo.spray.io/</url>
+    </repository>
+    <repository>
+      <id>conjars.org</id>
+      <url>http://conjars.org/repo</url>
+    </repository>  
+  </repositories>
+  
+  <build>
+    <sourceDirectory>src/main/scala</sourceDirectory>
+    <testSourceDirectory>src/test/scala</testSourceDirectory>
+    <plugins>
+      <plugin>
+        <!-- see http://davidb.github.com/scala-maven-plugin -->
+        <groupId>net.alchim31.maven</groupId>
+        <artifactId>scala-maven-plugin</artifactId>
+        <version>3.1.3</version>
+        <executions>
+          <execution>
+            <goals>
+              <goal>compile</goal>
+              <goal>testCompile</goal>
+            </goals>
+            <configuration>
+              <args>
+                <arg>-make:transitive</arg>
+                <arg>-dependencyfile</arg>
+                <arg>${project.build.directory}/.scala_dependencies</arg>
+              </args>
+            </configuration>
+          </execution>
+        </executions>
+      </plugin>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <version>2.13</version>
+        <configuration>
+          <useFile>false</useFile>
+          <disableXmlReport>true</disableXmlReport>
+          <!-- If you have classpath issue like NoDefClassError,... -->
+          <!-- useManifestOnlyJar>false</useManifestOnlyJar -->
+          <includes>
+            <include>**/*Test.*</include>
+            <include>**/*Suite.*</include>
+          </includes>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+  <organization>
+  	<name>Dr. Krusche &amp; Partner PartG</name>
+  	<url>http://dr-kruscheundpartner.de</url>
+  </organization>
+</project>
