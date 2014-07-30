@@ -27,8 +27,11 @@ data mining techniques, and even predictive analytics to gain deeper insights in
 One of the key prerequisites is to easily connect existing data sources to state-of-the art machine learning and predictive analytics 
 frameworks.
 
-In this project, we give advice how to connect Elasticsearch, a powerful distributed search engine, to Apache Spark and profit from the 
-increasing number of existing machine learning algorithms.
+In this project, we give advice how to connect Elasticsearch, a powerful distributed search engine, to Apache Spark and profit from the increasing number of existing machine learning algorithms.
+
+The figure shows the integration pattern for Elasticsearch and Spark from an architectural persepctive and also indicates how to proceed with the enriched content (i.e. the way back to the search index).
+
+![Elasticsearch and Spark](https://raw.githubusercontent.com/skrusche63/spark-elastic/master/images/Elasticsearch%20and%20Spark.png)
 
 The source code below describes a few lines of Scala, that are sufficient to read from Elasticsearch and provide data for further mining 
 and prediction tasks:
