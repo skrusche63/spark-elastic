@@ -46,6 +46,10 @@ and may then be consumed by a set of different consumers.
 In this project, we use Spark Streaming as a consumer and aggregator of e.g. such tracking data streams, and perform a live indexing. As Spark Streaming is also able to directly 
 compute new insights from data streams, this data integration pattern may be used as a starting point for real-time data analytics and enrichment before search indexing.
 
+The figure below illustrates the architecture of this pattern.
+
+![Real-time Data Integration and Analytics]https://raw.github.com/skrusche63/spark-elastic/master/images/Real-time%20Data%20Integration%20and%20Analytics.png
+
 The code example below illustrates that such an integration pattern may be implemented with just a few lines of Scala code:
 
 ```
