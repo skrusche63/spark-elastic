@@ -1,6 +1,8 @@
-
 ![Dr.Krusche & Partner PartG](https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner.png)
 
+Spark-ELASTIC is licensed under GPL v3. 
+
+Please feel free to contact us under team@dr-kruscheundpartner.de if you need another license or further support.
 
 ## Integration of Elasticsearch with Apache Spark
 
