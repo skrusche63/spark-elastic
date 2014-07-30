@@ -52,6 +52,8 @@ val docs = source.map(hit => {
 
 ```
 
+#### K-Means Segmentation by Geo Location
+
 From the data format extracted from Elasticsearch 
 ```Scala 
 RDD[(String,Map[String,String]
