@@ -2,7 +2,7 @@
 
 Spark-ELASTIC is licensed under GPL v3. 
 
-Please, feel free to contact us under team@dr-kruscheundpartner.de if you need another license or further support.
+Please feel free to contact us under team@dr-kruscheundpartner.de if you need another license or further support.
 
 ## Integration of Elasticsearch with Apache Spark
 
