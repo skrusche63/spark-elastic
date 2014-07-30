@@ -66,6 +66,13 @@
         </exclusion>
 	  </exclusions>
     </dependency>
+    
+    <!-- spark mllib 1.0.1 -->
+    <dependency>
+	  <groupId>org.apache.spark</groupId>
+	  <artifactId>spark-mllib_2.10</artifactId>
+	  <version>1.0.1</version>
+    </dependency>
             
     <!-- spark streaming 1.0.1 -->
     <dependency>
