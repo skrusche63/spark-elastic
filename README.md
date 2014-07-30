@@ -156,8 +156,7 @@ Using the architecture as illustrated above not only enables to apply Spark to d
 Twitter.  
 
 Algebird brings, as the name indicates, algebraic algorithms to streaming data. An important representative is [Count-Min Sketch](http://en.wikipedia.org/wiki/Count%E2%80%93min_sketch) which enables to compute the most 
-frequent items from streams in a certain time window. The code example below describes how to apply the CountMinSketchMonoid from Twitter compute to most frequent messages from a Kafka Stream regarding the messages' 
-classification: 
+frequent items from streams in a certain time window. The code example below describes how to apply the CountMinSketchMonoid (Algebird) to compute the most frequent messages from a Kafka Stream with respect to the messages' classification: 
 
 ```Scala
 
