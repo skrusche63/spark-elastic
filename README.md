@@ -4,11 +4,11 @@
 
 #### [Elasticsearch and Spark](#1)
 
-&nbsp;&nbsp;&nbsp;&nbsp;  [K-Means Segmentation by Geo Location](#1.1)
+&nbsp;&nbsp;&nbsp;&nbsp;  [(Example) K-Means Segmentation by Geo Location](#1.1)
 
 #### [Write to Elasticsearch using Kafka and Spark Streaming](#2)
 
-&nbsp;&nbsp;&nbsp;&nbsp;  [Count-Min Sketch and Streaming](#2.1)
+&nbsp;&nbsp;&nbsp;&nbsp;  [(Example)Count-Min Sketch and Streaming](#2.1)
 
 #### [Technology Stack](#3)
 
