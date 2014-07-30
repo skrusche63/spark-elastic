@@ -22,7 +22,7 @@ import kafka.producer.{KeyedMessage,Producer,ProducerConfig}
 import kafka.message.DefaultCompressionCodec
 
 import java.lang.Thread
-import java.util.{Properties, UUID}
+import java.util.{Properties, Random, UUID}
 
 /**
  * A helper to generate random messages and
@@ -111,7 +111,9 @@ object MessageGenerator {
        val mid = UUID.randomUUID().toString()
        val timestamp = System.currentTimeMillis()
        
-       val message = new Message(mid,text,timestamp)
+       val clas = new Random().nextInt(10).toLong
+       
+       val message = new Message(mid,clas,text,timestamp)
        producer.send(new KeyedMessage[String, Message](topic, message))
 
        i += 1

@@ -94,7 +94,14 @@
 	  <artifactId>spark-streaming-kafka_2.10</artifactId>
 	  <version>1.0.1</version>
     </dependency>
- 
+
+    <!--  twitter algebird 0.7.0 -->
+    <dependency>
+	  <groupId>com.twitter</groupId>
+	  <artifactId>algebird-core_2.10</artifactId>
+	  <version>0.7.0</version>
+    </dependency> 
+    
     <!-- elasticsearch hadoop -->
     <dependency>
       <groupId>org.elasticsearch</groupId>

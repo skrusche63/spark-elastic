@@ -91,11 +91,13 @@ object MessageUtils {
 }
 
 /**
- * Specification of sample data structures 
+ * Specification of sample data structures; the classifier
+ * is introduced to support the CountMinSketch algorithm
  */
 
 case class Message(
     mid:String,
+    clas:Long,
     text:String,
     timestamp:Long
 )
