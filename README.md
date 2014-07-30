@@ -4,7 +4,15 @@
 
 1. [Elasticsearch and Spark](#1)
 
-1.1 [K-Means Segmentation by Geo Location](#1.1)
+  1. [K-Means Segmentation by Geo Location](#1.1)
+
+2. [Write to Elasticsearch using Kafka and Spark Streaming](#2)
+
+  1. [Count-Min Sketch and Streaming](#2.1)
+
+3. [Technology Stack](#3)
+
+### License
 
 Spark-ELASTIC is licensed under GPL v3. 
 
@@ -107,7 +115,7 @@ object EsKMeans {
 }
 ```
 
-### Write to Elasticsearch using Kafka and Spark Streaming
+### <a name="2></a> Write to Elasticsearch using Kafka and Spark Streaming
 
 Real-time analytics is a very popular topic with a wide range of application areas:
 
@@ -159,7 +167,7 @@ stream.foreachRDD(messageRDD => {
 
 ```
 
-#### Count-Min Sketch and Streaming
+#### <a name="2.1"></a> Count-Min Sketch and Streaming
 
 Using the architecture as illustrated above not only enables to apply Spark to data streams. It also open real-time streams to other data processing libraries such as [Algebird](https://github.com/twitter/algebird) from 
 Twitter.  
@@ -212,7 +220,7 @@ object EsCountMinSktech {
 
 ```
 
-### Technology Stack
+### <a name="3"></a> Technology Stack
 
 * [Scala](http://scala-lang.org)
 * [Apache Kafka](http://kafka.apache.org/)
