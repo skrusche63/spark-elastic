@@ -150,6 +150,13 @@ stream.foreachRDD(messageRDD => {
 
 ```
 
+#### Count-Min Sketch and Streaming
+
+Using the architecture as illustrated above not only enables to apply Spark to data streams. It also open real-time streams to other data processing libraries such as [Algebird](https://github.com/twitter/algebird) from Twitter.  
+
+Algebird brings, as the name indicates, algebraic algorithms to streaming data. An important representative is 
+[Count-Min Sketch](http://en.wikipedia.org/wiki/Count%E2%80%93min_sketch) which enables to compute the most frequent items from streams in a certain time window.
+
 ### Technology Stack
 
 * [Scala](http://scala-lang.org)
