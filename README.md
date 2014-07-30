@@ -1,6 +1,10 @@
 ![Dr.Krusche & Partner PartG](https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner.png)
 
-[Elasticsearch and Spark](#1)
+### Topics
+
+1. [Elasticsearch and Spark](#1)
+
+1.1 [K-Means Segmentation by Geo Location](#1.1)
 
 Spark-ELASTIC is licensed under GPL v3. 
 
@@ -57,7 +61,7 @@ val docs = source.map(hit => {
 
 ```
 
-#### K-Means Segmentation by Geo Location
+#### <a name="1.1"></a> K-Means Segmentation by Geo Location
 
 From the data format extracted from Elasticsearch 
 ```Scala 
