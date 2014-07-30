@@ -40,7 +40,7 @@ Spark RDDs (Resilient Distributed DataSets) using a sliding window. These RDDs c
 
 This project provides a real-time data integration pattern based on Apache Kafka, Spark Streaming and Elasticsearch: 
 
-Apache Kafka is a distributed publish-subscribe messaging system, that may also be seen as a real-time integration system. For example, Web tracking events are easily sent to Kafka, 
+[Apache Kafka](http://kafka.apache.org/) is a distributed publish-subscribe messaging system, that may also be seen as a real-time integration system. For example, Web tracking events are easily sent to Kafka, 
 and may then be consumed by a set of different consumers.
 
 In this project, we use Spark Streaming as a consumer and aggregator of e.g. such tracking data streams, and perform a live indexing. As Spark Streaming is also able to directly 
