@@ -152,10 +152,57 @@ stream.foreachRDD(messageRDD => {
 
 #### Count-Min Sketch and Streaming
 
-Using the architecture as illustrated above not only enables to apply Spark to data streams. It also open real-time streams to other data processing libraries such as [Algebird](https://github.com/twitter/algebird) from Twitter.  
+Using the architecture as illustrated above not only enables to apply Spark to data streams. It also open real-time streams to other data processing libraries such as [Algebird](https://github.com/twitter/algebird) from 
+Twitter.  
 
-Algebird brings, as the name indicates, algebraic algorithms to streaming data. An important representative is 
-[Count-Min Sketch](http://en.wikipedia.org/wiki/Count%E2%80%93min_sketch) which enables to compute the most frequent items from streams in a certain time window.
+Algebird brings, as the name indicates, algebraic algorithms to streaming data. An important representative is [Count-Min Sketch](http://en.wikipedia.org/wiki/Count%E2%80%93min_sketch) which enables to compute the most 
+frequent items from streams in a certain time window. The code example below describes how to apply the CountMinSketchMonoid from Twitter compute to most frequent messages from a Kafka Stream regarding the messages' 
+classification: 
+
+```Scala
+
+object EsCountMinSktech {
+    
+  def findTopK(stream:DStream[Message]):Seq[(Long,Long)] = {
+  
+    val DELTA = 1E-3
+    val EPS   = 0.01
+    
+    val SEED = 1
+    val PERC = 0.001
+ 
+    val k = 5
+    
+    var globalCMS = new CountMinSketchMonoid(DELTA, EPS, SEED, PERC).zero
+ 
+    val clases = stream.map(message => message.clas)
+    val approxTopClases = clases.mapPartitions(clases => {
+      
+      val localCMS = new CountMinSketchMonoid(DELTA, EPS, SEED, PERC)
+      clases.map(clas => localCMS.create(clas))
+    
+    }).reduce(_ ++ _)
+
+    approxTopClases.foreach(rdd => {
+      if (rdd.count() != 0) globalCMS ++= rdd.first()
+    })
+        
+    /**
+     * Retrieve approximate TopK classifiers from the provided messages
+     */
+    val globalTopK = globalCMS.heavyHitters.map(clas => (clas, globalCMS.frequency(clas).estimate))
+      /*
+       * Retrieve the top k message classifiers: it may also be interesting to 
+       * return the classifier frequency from this method, ignoring the line below
+       */
+      .toSeq.sortBy(_._2).reverse.slice(0, k)
+  
+    globalTopK
+    
+  }
+}
+
+```
 
 ### Technology Stack
 
