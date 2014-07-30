@@ -1,5 +1,7 @@
 ![Dr.Krusche & Partner PartG](https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner.png)
 
+[Elasticsearch and Spark](#1)
+
 Spark-ELASTIC is licensed under GPL v3. 
 
 Please feel free to contact us under team@dr-kruscheundpartner.de if you need another license or further support.
@@ -19,7 +21,7 @@ Spark is an in-memory processing framework and outperforms Hadoop up to a factor
 Combining Apache Spark and Elasticsearch brings the power of machine learning, real-time data sources such as social media and 
 more to an Enterprise Search Platform. 
 
-### Read from Elasticsearch using Spark
+### <a name="1"></a>Read from Elasticsearch using Spark
 
 Besides linguistic and semantic enrichment, for data in a search index there is an increasing demand to apply knowledge discovery and
 data mining techniques, and even predictive analytics to gain deeper insights into the data and further increase their business value.
