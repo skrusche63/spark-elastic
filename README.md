@@ -98,3 +98,13 @@ stream.foreachRDD(messageRDD => {
 })
 
 ```
+
+### Technology Stack
+
+* [Scala](http://scala-lang.org)
+* [Apache Kafka](http://kafka.apache.org/)
+* [Apache Spark](http://spark.apache.org)
+* [Spark Streaming](https://spark.apache.org/streaming/)
+* [Elasticsearch](http://elasticsearch.org)
+* [Elasticsearch Hadoop](http://elasticsearch.org/overview/hadoop/)
+* [Spray](http://spray.io/)
