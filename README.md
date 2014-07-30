@@ -15,7 +15,37 @@ more to an Enterprise Search Platform.
 
 ### Read from Elasticsearch using Spark
 
-TBD
+Besides linguistic and semantic enrichment, for data in a search index there is an increasing demand to apply knowledge discovery and
+data mining techniques, and even predictive analytics to gain deeper insights into the data and further increase their business value.
+
+One of the key prerequisites is to easily connect existing data sources to state-of-the art machine learning and predictive analytics 
+frameworks.
+
+In this project, we give advice how to connect Elasticsearch, a powerful distributed search engine, to Apache Spark and profit from the 
+increasing number of existing machine learning algorithms.
+
+The source code below describes a few lines of Scala, that are sufficient to read from Elasticsearch and provide data for further mining 
+and prediction tasks:
+
+```Scala
+
+/**
+ * Read from ES using inputformat from org.elasticsearch.hadoop;
+ * note, that key [Text] specifies the document id (_id) and
+ * value [MapWritable] the document as a field -> value map
+ */
+val source = sc.newAPIHadoopRDD(conf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
+val docs = source.map(hit => {
+
+  val id = hit._1.toString()
+  val dc = toMap(hit._2)
+      
+  (id,dc)
+      
+}).collect
+
+```
+   
 
 ### Write to Elasticsearch using Kafka and Spark Streaming
 
