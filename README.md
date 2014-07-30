@@ -48,11 +48,11 @@ compute new insights from data streams, this data integration pattern may be use
 
 The figure below illustrates the architecture of this pattern.
 
-![Real-time Data Integration and Analytics]https://raw.github.com/skrusche63/spark-elastic/master/images/Real-time%20Data%20Integration%20and%20Analytics.png
+![Real-time Data Integration and Analytics](https://raw.github.com/skrusche63/spark-elastic/master/images/Real-time%20Data%20Integration%20and%20Analytics.png)
 
 The code example below illustrates that such an integration pattern may be implemented with just a few lines of Scala code:
 
-```
+```Scala
 val stream = KafkaUtils.createStream[String,Message,StringDecoder,MessageDecoder](ssc, kafkaConfig, kafkaTopics, StorageLevel.MEMORY_AND_DISK).map(_._2)
 stream.foreachRDD(messageRDD => {
   /**
