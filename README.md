@@ -55,7 +55,7 @@ val docs = source.map(hit => {
 From the data format extracted from Elasticsearch 
 ```Scala 
 RDD[(String,Map[String,String]
-``
+```
 it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). To this end, the [K-Means clustering](http://http://en.wikipedia.org/wiki/K-means_clustering) implementation 
 of [MLlib](https://spark.apache.org/mllib/) is used:
 ```Scala
@@ -94,7 +94,7 @@ object EsKMeans {
   }
   
 }
-``
+```
 
 ### Write to Elasticsearch using Kafka and Spark Streaming
 
