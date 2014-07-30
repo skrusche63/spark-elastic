@@ -53,6 +53,7 @@ The figure below illustrates the architecture of this pattern.
 The code example below illustrates that such an integration pattern may be implemented with just a few lines of Scala code:
 
 ```Scala
+
 val stream = KafkaUtils.createStream[String,Message,StringDecoder,MessageDecoder](ssc, kafkaConfig, kafkaTopics, StorageLevel.MEMORY_AND_DISK).map(_._2)
 stream.foreachRDD(messageRDD => {
   /**
