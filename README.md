@@ -51,7 +51,50 @@ val docs = source.map(hit => {
 }).collect
 
 ```
+
+From the data format extracted from Elasticsearch 
+```Scala 
+RDD[(String,Map[String,String]
+``
+it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). To this end, the [K-Means clustering](http://http://en.wikipedia.org/wiki/K-means_clustering) implementation 
+of [MLlib](https://spark.apache.org/mllib/) is used:
+```Scala
+
+object EsKMeans {
+
+  /**
+   * This method segments an RDD of documents clustering the assigned (lat,lon) geo coordinates.
+   * The field parameter specifies the names of the lat & lon coordinate fields 
+   */
+  def segmentByLocation(docs:RDD[(String,Map[String,String])],fields:Array[String],clusters:Int,iterations:Int):RDD[(Int,String,Map[String,String])] = {
+    /**
+     * Train model
+     */
+    val vectors = docs.map(doc => toVector(doc._2,fields))   
+    val model = KMeans.train(vectors, clusters, iterations)
+    /**
+     * Apply model
+     */
+    docs.map(doc => {
+      
+      val vector = toVector(doc._2,fields)
+      (model.predict(vector),doc._1,doc._2)
+      
+    })
+    
+  }
+
+  private def toVector(data:Map[String,String], fields:Array[String]):Vector = {
+       
+    val lat = data(fields(0)).toDouble
+    val lon = data(fields(1)).toDouble
+      
+    Vectors.dense(Array(lat,lon))
    
+  }
+  
+}
+``
 
 ### Write to Elasticsearch using Kafka and Spark Streaming
 
