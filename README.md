@@ -2,15 +2,15 @@
 
 ### Topics
 
-1. [Elasticsearch and Spark](#1)
+#### [Elasticsearch and Spark](#1)
 
-  1. [K-Means Segmentation by Geo Location](#1.1)
+&nbsp;&nbsp;&nbsp;&nbsp;  [K-Means Segmentation by Geo Location](#1.1)
 
-2. [Write to Elasticsearch using Kafka and Spark Streaming](#2)
+#### [Write to Elasticsearch using Kafka and Spark Streaming](#2)
 
-  1. [Count-Min Sketch and Streaming](#2.1)
+&nbsp;&nbsp;&nbsp;&nbsp;  [Count-Min Sketch and Streaming](#2.1)
 
-3. [Technology Stack](#3)
+#### [Technology Stack](#3)
 
 ### License
 
