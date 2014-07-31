@@ -15,6 +15,8 @@ Spark is an in-memory processing framework and outperforms Hadoop up to a factor
 Combining Apache Spark and Elasticsearch brings the power of machine learning, real-time data sources such as social media and 
 more to an Enterprise Search Platform. 
 
+***
+
 ### Topics
 
 #### [Elasticsearch and Spark](#1)
@@ -126,6 +128,7 @@ Suppose Elasticsearch is used to index e-commerce transactions on a per user bas
 
 For more information, please read [here](https://github.com/skrusche63/spark-elastic/wiki/Item-Similarity-with-Spark).
 
+***
 
 ### <a name="2"></a> Write to Elasticsearch using Kafka and Spark Streaming
 
@@ -231,6 +234,8 @@ object EsCountMinSktech {
 }
 
 ```
+
+***
 
 ### <a name="3"></a> Technology Stack
 
