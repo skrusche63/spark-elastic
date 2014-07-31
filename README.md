@@ -115,6 +115,17 @@ object EsKMeans {
 }
 ```
 
+Clustering indexed data from Elasticsearch with K-Means is a simple example of how to immediately benefit from the integration of Elasticsearch and Spark:
+
+Suppose Elasticsearch is used to index e-commerce transactions on a per user basis, then it is also straightforward to build a recommendation system from
+these data:
+
+* **First**, implicit user-item ratings have to be derived from the e-commerce transactions, and  
+* **Second**, from this item similarities are calculated to provide a recommendation model.
+
+For more information, please continue reading [here](https://github.com/skrusche63/spark-elastic/wiki/Item-Similarity-with-Spark)
+
+
 ### <a name="2"></a> Write to Elasticsearch using Kafka and Spark Streaming
 
 Real-time analytics is a very popular topic with a wide range of application areas:
