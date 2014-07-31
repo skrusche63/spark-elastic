@@ -115,10 +115,9 @@ object EsKMeans {
 }
 ```
 
-Clustering indexed data from Elasticsearch with K-Means is a simple example of how to immediately benefit from the integration of Elasticsearch and Spark:
+Clustering Elasticsearch data with K-Means is a first and simple example of how to immediately benefit from the integration with Spark. Other business cases may cover recommendations:
 
-Suppose Elasticsearch is used to index e-commerce transactions on a per user basis, then it is also straightforward to build a recommendation system from
-these data:
+Suppose Elasticsearch is used to index e-commerce transactions on a per user basis, then it is also straightforward to build a recommendation system from these data:
 
 * **First**, implicit user-item ratings have to be derived from the e-commerce transactions, and  
 * **Second**, from this item similarities are calculated to provide a recommendation model.
