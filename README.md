@@ -33,6 +33,8 @@ Spark-ELASTIC is licensed under GPL v3.
 
 Please feel free to contact us under team@dr-kruscheundpartner.de if you need another license or further support.
 
+***
+
 ### <a name="1"></a>Read from Elasticsearch using Spark
 
 Besides linguistic and semantic enrichment, for data in a search index there is an increasing demand to apply knowledge discovery and
