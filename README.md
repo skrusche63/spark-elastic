@@ -115,7 +115,7 @@ object EsKMeans {
 }
 ```
 
-### <a name="2></a> Write to Elasticsearch using Kafka and Spark Streaming
+### <a name="2"></a> Write to Elasticsearch using Kafka and Spark Streaming
 
 Real-time analytics is a very popular topic with a wide range of application areas:
 
