@@ -146,9 +146,9 @@ object EsInsight {
 
     val table = sqlc.jsonRDD(jdocs)
     table.registerAsTable("docs")
-  /**
-   * Mixing SQL and other Spark operations
-   */
+    /**
+     * Mixing SQL and other Spark operations
+     */
     val subjects = sqlc.sql("SELECT doc.subject FROM docs").filter(row => row.getString(0).contains("Re"))    
     subjects.foreach(subject => println(subject))
     
