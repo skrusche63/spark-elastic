@@ -1,6 +1,6 @@
 ![Dr.Krusche & Partner PartG](https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner.png)
 
-## Integration of Elasticsearch with Apache Spark
+## Integration of Elasticsearch with Spark
 
 This project shows how to easily integrate [Apache Spark](http://spark.apache.org), a fast and general purpose engine for 
 large-scale data processing, with [Elasticsearch](http://elasticsearch.org), a real-time distributed search and analytics 
