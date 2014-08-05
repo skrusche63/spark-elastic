@@ -17,26 +17,6 @@ more to an Enterprise Search Platform.
 
 ***
 
-### Topics
-
-#### [Elasticsearch and Spark](#1)
-
-&nbsp;&nbsp;&nbsp;&nbsp;  [K-Means Segmentation by Geo Location (Algorithm)](#1.1)
-
-#### [Write to Elasticsearch using Kafka and Spark Streaming](#2)
-
-&nbsp;&nbsp;&nbsp;&nbsp;  [Count-Min Sketch and Streaming (Algorithm)](#2.1)
-
-#### [Technology Stack](#3)
-
-### License
-
-Spark-ELASTIC is licensed under GPL v3. 
-
-Please feel free to contact us under team@dr-kruscheundpartner.de if you need another license or further support.
-
-***
-
 ### <a name="1"></a>Read from Elasticsearch using Spark
 
 Besides linguistic and semantic enrichment, for data in a search index there is an increasing demand to apply knowledge discovery and
