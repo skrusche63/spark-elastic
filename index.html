@@ -1,0 +1,314 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <meta charset='utf-8'>
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="description" content="Spark-elastic : This project combines Apache Spark and Elasticsearch to enable mining &amp; prediction for Elasticsearch.">
+
+    <link rel="stylesheet" type="text/css" media="screen" href="stylesheets/stylesheet.css">
+
+    <title>Spark-elastic</title>
+  </head>
+
+  <body>
+
+    <!-- HEADER -->
+    <div id="header_wrap" class="outer">
+        <header class="inner">
+          <a id="forkme_banner" href="https://github.com/skrusche63/spark-elastic">View on GitHub</a>
+
+          <h1 id="project_title">Spark-elastic</h1>
+          <h2 id="project_tagline">This project combines Apache Spark and Elasticsearch to enable mining &amp; prediction for Elasticsearch.</h2>
+
+            <section id="downloads">
+              <a class="zip_download_link" href="https://github.com/skrusche63/spark-elastic/zipball/master">Download this project as a .zip file</a>
+              <a class="tar_download_link" href="https://github.com/skrusche63/spark-elastic/tarball/master">Download this project as a tar.gz file</a>
+            </section>
+        </header>
+    </div>
+
+    <!-- MAIN CONTENT -->
+    <div id="main_content_wrap" class="outer">
+      <section id="main_content" class="inner">
+        <p><img src="https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner.png" alt="Dr.Krusche &amp; Partner PartG"></p>
+
+<h2>
+<a name="integration-of-elasticsearch-with-spark" class="anchor" href="#integration-of-elasticsearch-with-spark"><span class="octicon octicon-link"></span></a>Integration of Elasticsearch with Spark</h2>
+
+<p>This project shows how to easily integrate <a href="http://spark.apache.org">Apache Spark</a>, a fast and general purpose engine for 
+large-scale data processing, with <a href="http://elasticsearch.org">Elasticsearch</a>, a real-time distributed search and analytics 
+engine.</p>
+
+<p>Spark is an in-memory processing framework and outperforms Hadoop up to a factor of 100. Spark is accompanied by </p>
+
+<ul>
+<li>
+<a href="https://spark.apache.org/mllib/">MLlib</a>, a scalable machine learning library,</li>
+<li>
+<a href="https://spark.apache.org/sql/">Spark SQL</a>, a unified access platform for structured big data,</li>
+<li>
+<a href="https://spark.apache.org/streaming/">Spark Streaming</a>, a library to build scalable fault-tolerant streaming applications.</li>
+</ul><p>Combining Apache Spark and Elasticsearch brings the power of machine learning, real-time data sources such as social media and 
+more to an Enterprise Search Platform. </p>
+
+<hr><h3>
+<a name="topics" class="anchor" href="#topics"><span class="octicon octicon-link"></span></a>Topics</h3>
+
+<h4>
+<a name="elasticsearch-and-spark" class="anchor" href="#elasticsearch-and-spark"><span class="octicon octicon-link"></span></a><a href="#1">Elasticsearch and Spark</a>
+</h4>
+
+<p>      <a href="#1.1">K-Means Segmentation by Geo Location (Algorithm)</a></p>
+
+<h4>
+<a name="write-to-elasticsearch-using-kafka-and-spark-streaming" class="anchor" href="#write-to-elasticsearch-using-kafka-and-spark-streaming"><span class="octicon octicon-link"></span></a><a href="#2">Write to Elasticsearch using Kafka and Spark Streaming</a>
+</h4>
+
+<p>      <a href="#2.1">Count-Min Sketch and Streaming (Algorithm)</a></p>
+
+<h4>
+<a name="technology-stack" class="anchor" href="#technology-stack"><span class="octicon octicon-link"></span></a><a href="#3">Technology Stack</a>
+</h4>
+
+<h3>
+<a name="license" class="anchor" href="#license"><span class="octicon octicon-link"></span></a>License</h3>
+
+<p>Spark-ELASTIC is licensed under GPL v3. </p>
+
+<p>Please feel free to contact us under <a href="mailto:team@dr-kruscheundpartner.de">team@dr-kruscheundpartner.de</a> if you need another license or further support.</p>
+
+<hr><h3>
+<a name="read-from-elasticsearch-using-spark" class="anchor" href="#read-from-elasticsearch-using-spark"><span class="octicon octicon-link"></span></a>
+<a name="1"></a>Read from Elasticsearch using Spark</h3>
+
+<p>Besides linguistic and semantic enrichment, for data in a search index there is an increasing demand to apply knowledge discovery and
+data mining techniques, and even predictive analytics to gain deeper insights into the data and further increase their business value.</p>
+
+<p>One of the key prerequisites is to easily connect existing data sources to state-of-the art machine learning and predictive analytics 
+frameworks.</p>
+
+<p>In this project, we give advice how to connect Elasticsearch, a powerful distributed search engine, to Apache Spark and profit from the increasing number of existing machine learning algorithms.</p>
+
+<p>The figure shows the integration pattern for Elasticsearch and Spark from an architectural persepctive and also indicates how to proceed with the enriched content (i.e. the way back to the search index).</p>
+
+<p><img src="https://raw.githubusercontent.com/skrusche63/spark-elastic/master/images/Elasticsearch%20and%20Spark.png" alt="Elasticsearch and Spark"></p>
+
+<p>The source code below describes a few lines of Scala, that are sufficient to read from Elasticsearch and provide data for further mining 
+and prediction tasks:</p>
+
+<div class="highlight highlight-Scala"><pre>
+<span class="cm">/**</span>
+<span class="cm"> * Read from ES using inputformat from org.elasticsearch.hadoop;</span>
+<span class="cm"> * note, that key [Text] specifies the document id (_id) and</span>
+<span class="cm"> * value [MapWritable] the document as a field -&gt; value map</span>
+<span class="cm"> */</span>
+<span class="k">val</span> <span class="n">source</span> <span class="k">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">newAPIHadoopRDD</span><span class="o">(</span><span class="n">conf</span><span class="o">,</span> <span class="n">classOf</span><span class="o">[</span><span class="kt">EsInputFormat</span><span class="o">[</span><span class="kt">Text</span>, <span class="kt">MapWritable</span><span class="o">]],</span> <span class="n">classOf</span><span class="o">[</span><span class="kt">Text</span><span class="o">],</span> <span class="n">classOf</span><span class="o">[</span><span class="kt">MapWritable</span><span class="o">])</span>
+<span class="k">val</span> <span class="n">docs</span> <span class="k">=</span> <span class="n">source</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">hit</span> <span class="k">=&gt;</span> <span class="o">{</span>
+
+  <span class="k">val</span> <span class="n">id</span> <span class="k">=</span> <span class="n">hit</span><span class="o">.</span><span class="n">_1</span><span class="o">.</span><span class="n">toString</span><span class="o">()</span>
+  <span class="k">val</span> <span class="n">dc</span> <span class="k">=</span> <span class="n">toMap</span><span class="o">(</span><span class="n">hit</span><span class="o">.</span><span class="n">_2</span><span class="o">)</span>
+
+  <span class="o">(</span><span class="n">id</span><span class="o">,</span><span class="n">dc</span><span class="o">)</span>
+
+<span class="o">}).</span><span class="n">collect</span>
+
+</pre></div>
+
+<h4>
+<a name="-k-means-segmentation-by-geo-location" class="anchor" href="#-k-means-segmentation-by-geo-location"><span class="octicon octicon-link"></span></a>
+<a name="1.1"></a> K-Means Segmentation by Geo Location</h4>
+
+<p>From the data format extracted from Elasticsearch </p>
+
+<div class="highlight highlight-Scala"><pre><span class="nc">RDD</span><span class="o">[(</span><span class="kt">String</span>,<span class="kt">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">String</span><span class="o">]</span>
+</pre></div>
+
+<p>it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). To this end, the <a href="http://http://en.wikipedia.org/wiki/K-means_clustering">K-Means clustering</a> implementation 
+of <a href="https://spark.apache.org/mllib/">MLlib</a> is used:</p>
+
+<div class="highlight highlight-Scala"><pre>
+<span class="k">object</span> <span class="nc">EsKMeans</span> <span class="o">{</span>
+
+  <span class="cm">/**</span>
+<span class="cm">   * This method segments an RDD of documents clustering the assigned (lat,lon) geo coordinates.</span>
+<span class="cm">   * The field parameter specifies the names of the lat &amp; lon coordinate fields </span>
+<span class="cm">   */</span>
+  <span class="k">def</span> <span class="n">segmentByLocation</span><span class="o">(</span><span class="n">docs</span><span class="k">:</span><span class="kt">RDD</span><span class="o">[(</span><span class="kt">String</span>,<span class="kt">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">String</span><span class="o">])],</span><span class="n">fields</span><span class="k">:</span><span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">],</span><span class="n">clusters</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span><span class="n">iterations</span><span class="k">:</span><span class="kt">Int</span><span class="o">)</span><span class="k">:</span><span class="kt">RDD</span><span class="o">[(</span><span class="kt">Int</span>,<span class="kt">String</span>,<span class="kt">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">String</span><span class="o">])]</span> <span class="k">=</span> <span class="o">{</span>
+    <span class="cm">/**</span>
+<span class="cm">     * Train model</span>
+<span class="cm">     */</span>
+    <span class="k">val</span> <span class="n">vectors</span> <span class="k">=</span> <span class="n">docs</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">doc</span> <span class="k">=&gt;</span> <span class="n">toVector</span><span class="o">(</span><span class="n">doc</span><span class="o">.</span><span class="n">_2</span><span class="o">,</span><span class="n">fields</span><span class="o">))</span>   
+    <span class="k">val</span> <span class="n">model</span> <span class="k">=</span> <span class="nc">KMeans</span><span class="o">.</span><span class="n">train</span><span class="o">(</span><span class="n">vectors</span><span class="o">,</span> <span class="n">clusters</span><span class="o">,</span> <span class="n">iterations</span><span class="o">)</span>
+    <span class="cm">/**</span>
+<span class="cm">     * Apply model</span>
+<span class="cm">     */</span>
+    <span class="n">docs</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">doc</span> <span class="k">=&gt;</span> <span class="o">{</span>
+
+      <span class="k">val</span> <span class="n">vector</span> <span class="k">=</span> <span class="n">toVector</span><span class="o">(</span><span class="n">doc</span><span class="o">.</span><span class="n">_2</span><span class="o">,</span><span class="n">fields</span><span class="o">)</span>
+      <span class="o">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="o">(</span><span class="n">vector</span><span class="o">),</span><span class="n">doc</span><span class="o">.</span><span class="n">_1</span><span class="o">,</span><span class="n">doc</span><span class="o">.</span><span class="n">_2</span><span class="o">)</span>
+
+    <span class="o">})</span>
+
+  <span class="o">}</span>
+
+  <span class="k">private</span> <span class="k">def</span> <span class="n">toVector</span><span class="o">(</span><span class="n">data</span><span class="k">:</span><span class="kt">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">String</span><span class="o">],</span> <span class="n">fields</span><span class="k">:</span><span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span><span class="kt">Vector</span> <span class="o">=</span> <span class="o">{</span>
+
+    <span class="k">val</span> <span class="n">lat</span> <span class="k">=</span> <span class="n">data</span><span class="o">(</span><span class="n">fields</span><span class="o">(</span><span class="mi">0</span><span class="o">)).</span><span class="n">toDouble</span>
+    <span class="k">val</span> <span class="n">lon</span> <span class="k">=</span> <span class="n">data</span><span class="o">(</span><span class="n">fields</span><span class="o">(</span><span class="mi">1</span><span class="o">)).</span><span class="n">toDouble</span>
+
+    <span class="nc">Vectors</span><span class="o">.</span><span class="n">dense</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="n">lat</span><span class="o">,</span><span class="n">lon</span><span class="o">))</span>
+
+  <span class="o">}</span>
+
+<span class="o">}</span>
+</pre></div>
+
+<p>Clustering Elasticsearch data with K-Means is a first and simple example of how to immediately benefit from the integration with Spark. Other business cases may cover recommendations:</p>
+
+<p>Suppose Elasticsearch is used to index e-commerce transactions on a per user basis, then it is also straightforward to build a recommendation system in just two steps:</p>
+
+<ul>
+<li>
+<strong>First</strong>, implicit user-item ratings have to be derived from the e-commerce transactions, and<br>
+</li>
+<li>
+<strong>Second</strong>, from this item similarities are calculated to provide a recommendation model.</li>
+</ul><p>For more information, please read <a href="https://github.com/skrusche63/spark-elastic/wiki/Item-Similarity-with-Spark">here</a>.</p>
+
+<hr><h3>
+<a name="-write-to-elasticsearch-using-kafka-and-spark-streaming" class="anchor" href="#-write-to-elasticsearch-using-kafka-and-spark-streaming"><span class="octicon octicon-link"></span></a>
+<a name="2"></a> Write to Elasticsearch using Kafka and Spark Streaming</h3>
+
+<p>Real-time analytics is a very popular topic with a wide range of application areas:</p>
+
+<ul>
+<li>High frequency trading (finance), </li>
+<li>Real-time bidding (adtech), </li>
+<li>Real-time social activity (social networks),</li>
+<li>Real-time sensoring (Internet of things),</li>
+<li>Real-time user behavior,</li>
+</ul><p>and more, gain tremendous business value from real-time analytics. There exist a lot of popular frameworks to aggregate data in real-time, such as Apache Storm, 
+Apache S4, Apache Samza, Akka Streams, SQLStream to name just a few.</p>
+
+<p>Spark Streaming, which is capable to process about 400,000 records per node per second for simple aggregations on small records, significantly outperforms other popular 
+streaming systems. This is mainly because Spark Streaming groups messages in small batches which are then processed together. </p>
+
+<p>Moreover in case of failure, Spark Streaming batches are only processed once which greatly simplifies the logic (e.g. to make sure some values are not counted multiple times).</p>
+
+<p>Spark Streaming is a layer on top of Spark and transforms and batches data streams from various sources, such as Kafka, Twitter or ZeroMQ into a sequence of 
+Spark RDDs (Resilient Distributed DataSets) using a sliding window. These RDDs can then be manipulated using normal Spark operations.</p>
+
+<p>This project provides a real-time data integration pattern based on Apache Kafka, Spark Streaming and Elasticsearch: </p>
+
+<p><a href="http://kafka.apache.org/">Apache Kafka</a> is a distributed publish-subscribe messaging system, that may also be seen as a real-time integration system. For example, Web tracking events are easily sent to Kafka, 
+and may then be consumed by a set of different consumers.</p>
+
+<p>In this project, we use Spark Streaming as a consumer and aggregator of e.g. such tracking data streams, and perform a live indexing. As Spark Streaming is also able to directly 
+compute new insights from data streams, this data integration pattern may be used as a starting point for real-time data analytics and enrichment before search indexing.</p>
+
+<p>The figure below illustrates the architecture of this pattern. For completeness reasons, <a href="http://spray.io/">Spray</a> has been introduced. Spray is an open-source toolkit for 
+building REST/HTTP-based integration layers on top of Scala and Akka. As it is asynchronous, actor-based, fast, lightweight, and modular, it is an easy way to connect Scala 
+applications to the Web.</p>
+
+<p><img src="https://raw.github.com/skrusche63/spark-elastic/master/images/Real-time%20Data%20Integration%20and%20Analytics.png" alt="Real-time Data Integration and Analytics"></p>
+
+<p>The code example below illustrates that such an integration pattern may be implemented with just a few lines of Scala code:</p>
+
+<div class="highlight highlight-Scala"><pre>
+<span class="k">val</span> <span class="n">stream</span> <span class="k">=</span> <span class="nc">KafkaUtils</span><span class="o">.</span><span class="n">createStream</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">Message</span>,<span class="kt">StringDecoder</span>,<span class="kt">MessageDecoder</span><span class="o">](</span><span class="n">ssc</span><span class="o">,</span> <span class="n">kafkaConfig</span><span class="o">,</span> <span class="n">kafkaTopics</span><span class="o">,</span> <span class="nc">StorageLevel</span><span class="o">.</span><span class="nc">MEMORY_AND_DISK</span><span class="o">).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">_2</span><span class="o">)</span>
+<span class="n">stream</span><span class="o">.</span><span class="n">foreachRDD</span><span class="o">(</span><span class="n">messageRDD</span> <span class="k">=&gt;</span> <span class="o">{</span>
+  <span class="cm">/**</span>
+<span class="cm">   * Live indexing of Kafka messages; note, that this is also</span>
+<span class="cm">   * an appropriate place to integrate further message analysis</span>
+<span class="cm">   */</span>
+  <span class="k">val</span> <span class="n">messages</span> <span class="k">=</span> <span class="n">messageRDD</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">prepare</span><span class="o">)</span>
+  <span class="n">messages</span><span class="o">.</span><span class="n">saveAsNewAPIHadoopFile</span><span class="o">(</span><span class="s">"-"</span><span class="o">,</span><span class="n">classOf</span><span class="o">[</span><span class="kt">NullWritable</span><span class="o">],</span><span class="n">classOf</span><span class="o">[</span><span class="kt">MapWritable</span><span class="o">],</span><span class="n">classOf</span><span class="o">[</span><span class="kt">EsOutputFormat</span><span class="o">],</span><span class="n">esConfig</span><span class="o">)</span>    
+
+<span class="o">})</span>
+
+</pre></div>
+
+<h4>
+<a name="-count-min-sketch-and-streaming" class="anchor" href="#-count-min-sketch-and-streaming"><span class="octicon octicon-link"></span></a>
+<a name="2.1"></a> Count-Min Sketch and Streaming</h4>
+
+<p>Using the architecture as illustrated above not only enables to apply Spark to data streams. It also open real-time streams to other data processing libraries such as <a href="https://github.com/twitter/algebird">Algebird</a> from 
+Twitter.  </p>
+
+<p>Algebird brings, as the name indicates, algebraic algorithms to streaming data. An important representative is <a href="http://en.wikipedia.org/wiki/Count%E2%80%93min_sketch">Count-Min Sketch</a> which enables to compute the most 
+frequent items from streams in a certain time window. The code example below describes how to apply the CountMinSketchMonoid (Algebird) to compute the most frequent messages from a Kafka Stream with respect to the messages' classification: </p>
+
+<div class="highlight highlight-Scala"><pre>
+<span class="k">object</span> <span class="nc">EsCountMinSktech</span> <span class="o">{</span>
+
+  <span class="k">def</span> <span class="n">findTopK</span><span class="o">(</span><span class="n">stream</span><span class="k">:</span><span class="kt">DStream</span><span class="o">[</span><span class="kt">Message</span><span class="o">])</span><span class="k">:</span><span class="kt">Seq</span><span class="o">[(</span><span class="kt">Long</span>,<span class="kt">Long</span><span class="o">)]</span> <span class="k">=</span> <span class="o">{</span>
+
+    <span class="k">val</span> <span class="nc">DELTA</span> <span class="k">=</span> <span class="mi">1</span><span class="n">E</span><span class="o">-</span><span class="mi">3</span>
+    <span class="k">val</span> <span class="nc">EPS</span>   <span class="k">=</span> <span class="mf">0.01</span>
+
+    <span class="k">val</span> <span class="nc">SEED</span> <span class="k">=</span> <span class="mi">1</span>
+    <span class="k">val</span> <span class="nc">PERC</span> <span class="k">=</span> <span class="mf">0.001</span>
+
+    <span class="k">val</span> <span class="n">k</span> <span class="k">=</span> <span class="mi">5</span>
+
+    <span class="k">var</span> <span class="n">globalCMS</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">CountMinSketchMonoid</span><span class="o">(</span><span class="nc">DELTA</span><span class="o">,</span> <span class="nc">EPS</span><span class="o">,</span> <span class="nc">SEED</span><span class="o">,</span> <span class="nc">PERC</span><span class="o">).</span><span class="n">zero</span>
+
+    <span class="k">val</span> <span class="n">clases</span> <span class="k">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">message</span> <span class="k">=&gt;</span> <span class="n">message</span><span class="o">.</span><span class="n">clas</span><span class="o">)</span>
+    <span class="k">val</span> <span class="n">approxTopClases</span> <span class="k">=</span> <span class="n">clases</span><span class="o">.</span><span class="n">mapPartitions</span><span class="o">(</span><span class="n">clases</span> <span class="k">=&gt;</span> <span class="o">{</span>
+
+      <span class="k">val</span> <span class="n">localCMS</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">CountMinSketchMonoid</span><span class="o">(</span><span class="nc">DELTA</span><span class="o">,</span> <span class="nc">EPS</span><span class="o">,</span> <span class="nc">SEED</span><span class="o">,</span> <span class="nc">PERC</span><span class="o">)</span>
+      <span class="n">clases</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">clas</span> <span class="k">=&gt;</span> <span class="n">localCMS</span><span class="o">.</span><span class="n">create</span><span class="o">(</span><span class="n">clas</span><span class="o">))</span>
+
+    <span class="o">}).</span><span class="n">reduce</span><span class="o">(</span><span class="k">_</span> <span class="o">++</span> <span class="k">_</span><span class="o">)</span>
+
+    <span class="n">approxTopClases</span><span class="o">.</span><span class="n">foreach</span><span class="o">(</span><span class="n">rdd</span> <span class="k">=&gt;</span> <span class="o">{</span>
+      <span class="k">if</span> <span class="o">(</span><span class="n">rdd</span><span class="o">.</span><span class="n">count</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="n">globalCMS</span> <span class="o">++=</span> <span class="n">rdd</span><span class="o">.</span><span class="n">first</span><span class="o">()</span>
+    <span class="o">})</span>
+
+    <span class="cm">/**</span>
+<span class="cm">     * Retrieve approximate TopK classifiers from the provided messages</span>
+<span class="cm">     */</span>
+    <span class="k">val</span> <span class="n">globalTopK</span> <span class="k">=</span> <span class="n">globalCMS</span><span class="o">.</span><span class="n">heavyHitters</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">clas</span> <span class="k">=&gt;</span> <span class="o">(</span><span class="n">clas</span><span class="o">,</span> <span class="n">globalCMS</span><span class="o">.</span><span class="n">frequency</span><span class="o">(</span><span class="n">clas</span><span class="o">).</span><span class="n">estimate</span><span class="o">))</span>
+      <span class="cm">/*</span>
+<span class="cm">       * Retrieve the top k message classifiers: it may also be interesting to </span>
+<span class="cm">       * return the classifier frequency from this method, ignoring the line below</span>
+<span class="cm">       */</span>
+      <span class="o">.</span><span class="n">toSeq</span><span class="o">.</span><span class="n">sortBy</span><span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">_2</span><span class="o">).</span><span class="n">reverse</span><span class="o">.</span><span class="n">slice</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">k</span><span class="o">)</span>
+
+    <span class="n">globalTopK</span>
+
+  <span class="o">}</span>
+<span class="o">}</span>
+
+</pre></div>
+
+<hr><h3>
+<a name="-technology-stack" class="anchor" href="#-technology-stack"><span class="octicon octicon-link"></span></a>
+<a name="3"></a> Technology Stack</h3>
+
+<ul>
+<li><a href="http://scala-lang.org">Scala</a></li>
+<li><a href="http://kafka.apache.org/">Apache Kafka</a></li>
+<li><a href="http://spark.apache.org">Apache Spark</a></li>
+<li><a href="https://spark.apache.org/streaming/">Spark Streaming</a></li>
+<li><a href="https://github.com/twitter/algebird">Twitter Algebird</a></li>
+<li><a href="http://elasticsearch.org">Elasticsearch</a></li>
+<li><a href="http://elasticsearch.org/overview/hadoop/">Elasticsearch Hadoop</a></li>
+<li><a href="http://spray.io/">Spray</a></li>
+</ul>
+      </section>
+    </div>
+
+    <!-- FOOTER  -->
+    <div id="footer_wrap" class="outer">
+      <footer class="inner">
+        <p class="copyright">Spark-elastic maintained by <a href="https://github.com/skrusche63">skrusche63</a></p>
+        <p>Published with <a href="http://pages.github.com">GitHub Pages</a></p>
+      </footer>
+    </div>
+
+    
+
+  </body>
+</html>
