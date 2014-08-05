@@ -54,4 +54,5 @@ object EsInsight {
     subjects.foreach(subject => println(subject))
     
   }
+  
 }
