@@ -55,13 +55,12 @@ val docs = source.map(hit => {
 
 #### <a name="1.1"></a> K-Means Segmentation by Geo Location
 
-From the data format extracted from Elasticsearch 
-``` 
-RDD[(String,Map[String,String]
-```
-it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). To this end, the [K-Means clustering](http://http://en.wikipedia.org/wiki/K-means_clustering) implementation 
+From the data format extracted from Elasticsearch `RDD[(String,Map[String,String]` it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). 
+
+To this end, the [K-Means clustering](http://http://en.wikipedia.org/wiki/K-means_clustering) implementation 
 of [MLlib](https://spark.apache.org/mllib/) is used:
-```Scala
+
+```
 
 object EsKMeans {
 
