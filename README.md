@@ -272,6 +272,7 @@ object EsCountMinSktech {
 * [Scala](http://scala-lang.org)
 * [Apache Kafka](http://kafka.apache.org/)
 * [Apache Spark](http://spark.apache.org)
+* [Spark SQL](https://spark.apache.org/sql/)
 * [Spark Streaming](https://spark.apache.org/streaming/)
 * [Twitter Algebird](https://github.com/twitter/algebird)
 * [Elasticsearch](http://elasticsearch.org)
