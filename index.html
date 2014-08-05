@@ -40,7 +40,7 @@
 large-scale data processing, with <a href="http://elasticsearch.org">Elasticsearch</a>, a real-time distributed search and analytics 
 engine.</p>
 
-<p>Spark is an in-memory processing framework and outperforms Hadoop up to a factor of 100. &nbsp; It is accompanied by </p>
+<p>Spark is an in-memory processing framework and outperforms Hadoop up to a factor of 100. Spark is accompanied by </p>
 
 <ul>
 <li>
@@ -71,72 +71,69 @@ frameworks.</p>
 <p>The source code below describes a few lines of Scala, that are sufficient to read from Elasticsearch and provide data for further mining 
 and prediction tasks:</p>
 
-<div class="highlight highlight-Scala"><pre>
-<span class="cm">/**</span>
-<span class="cm"> * Read from ES using inputformat from org.elasticsearch.hadoop;</span>
-<span class="cm"> * note, that key [Text] specifies the document id (_id) and</span>
-<span class="cm"> * value [MapWritable] the document as a field -&gt; value map</span>
-<span class="cm"> */</span>
-<span class="k">val</span> <span class="n">source</span> <span class="k">=</span> <span class="n">sc</span><span class="o">.</span><span class="n">newAPIHadoopRDD</span><span class="o">(</span><span class="n">conf</span><span class="o">,</span> <span class="n">classOf</span><span class="o">[</span><span class="kt">EsInputFormat</span><span class="o">[</span><span class="kt">Text</span>, <span class="kt">MapWritable</span><span class="o">]],</span> <span class="n">classOf</span><span class="o">[</span><span class="kt">Text</span><span class="o">],</span> <span class="n">classOf</span><span class="o">[</span><span class="kt">MapWritable</span><span class="o">])</span>
-<span class="k">val</span> <span class="n">docs</span> <span class="k">=</span> <span class="n">source</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">hit</span> <span class="k">=&gt;</span> <span class="o">{</span>
+<pre><code>
+/**
+ * Read from ES using inputformat from org.elasticsearch.hadoop;
+ * note, that key [Text] specifies the document id (_id) and
+ * value [MapWritable] the document as a field -&gt; value map
+ */
+val source = sc.newAPIHadoopRDD(conf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
+val docs = source.map(hit =&gt; {
 
-  <span class="k">val</span> <span class="n">id</span> <span class="k">=</span> <span class="n">hit</span><span class="o">.</span><span class="n">_1</span><span class="o">.</span><span class="n">toString</span><span class="o">()</span>
-  <span class="k">val</span> <span class="n">dc</span> <span class="k">=</span> <span class="n">toMap</span><span class="o">(</span><span class="n">hit</span><span class="o">.</span><span class="n">_2</span><span class="o">)</span>
+  val id = hit._1.toString()
+  val dc = toMap(hit._2)
 
-  <span class="o">(</span><span class="n">id</span><span class="o">,</span><span class="n">dc</span><span class="o">)</span>
+  (id,dc)
 
-<span class="o">}).</span><span class="n">collect</span>
+}).collect
 
-</pre></div>
+</code></pre>
 
 <h4>
 <a name="-k-means-segmentation-by-geo-location" class="anchor" href="#-k-means-segmentation-by-geo-location"><span class="octicon octicon-link"></span></a>
 <a name="1.1"></a> K-Means Segmentation by Geo Location</h4>
 
-<p>From the data format extracted from Elasticsearch </p>
+<p>From the data format extracted from Elasticsearch <code>RDD[(String,Map[String,String]</code> it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). </p>
 
-<div class="highlight highlight-Scala"><pre><span class="nc">RDD</span><span class="o">[(</span><span class="kt">String</span>,<span class="kt">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">String</span><span class="o">]</span>
-</pre></div>
-
-<p>it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). To this end, the <a href="http://http://en.wikipedia.org/wiki/K-means_clustering">K-Means clustering</a> implementation 
+<p>To this end, the <a href="http://http://en.wikipedia.org/wiki/K-means_clustering">K-Means clustering</a> implementation 
 of <a href="https://spark.apache.org/mllib/">MLlib</a> is used:</p>
 
-<div class="highlight highlight-Scala"><pre>
-<span class="k">object</span> <span class="nc">EsKMeans</span> <span class="o">{</span>
+<pre><code>
+object EsKMeans {
 
-  <span class="cm">/**</span>
-<span class="cm">   * This method segments an RDD of documents clustering the assigned (lat,lon) geo coordinates.</span>
-<span class="cm">   * The field parameter specifies the names of the lat &amp; lon coordinate fields </span>
-<span class="cm">   */</span>
-  <span class="k">def</span> <span class="n">segmentByLocation</span><span class="o">(</span><span class="n">docs</span><span class="k">:</span><span class="kt">RDD</span><span class="o">[(</span><span class="kt">String</span>,<span class="kt">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">String</span><span class="o">])],</span><span class="n">fields</span><span class="k">:</span><span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">],</span><span class="n">clusters</span><span class="k">:</span><span class="kt">Int</span><span class="o">,</span><span class="n">iterations</span><span class="k">:</span><span class="kt">Int</span><span class="o">)</span><span class="k">:</span><span class="kt">RDD</span><span class="o">[(</span><span class="kt">Int</span>,<span class="kt">String</span>,<span class="kt">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">String</span><span class="o">])]</span> <span class="k">=</span> <span class="o">{</span>
-    <span class="cm">/**</span>
-<span class="cm">     * Train model</span>
-<span class="cm">     */</span>
-    <span class="k">val</span> <span class="n">vectors</span> <span class="k">=</span> <span class="n">docs</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">doc</span> <span class="k">=&gt;</span> <span class="n">toVector</span><span class="o">(</span><span class="n">doc</span><span class="o">.</span><span class="n">_2</span><span class="o">,</span><span class="n">fields</span><span class="o">))</span>   
-    <span class="k">val</span> <span class="n">model</span> <span class="k">=</span> <span class="nc">KMeans</span><span class="o">.</span><span class="n">train</span><span class="o">(</span><span class="n">vectors</span><span class="o">,</span> <span class="n">clusters</span><span class="o">,</span> <span class="n">iterations</span><span class="o">)</span>
-    <span class="cm">/**</span>
-<span class="cm">     * Apply model</span>
-<span class="cm">     */</span>
-    <span class="n">docs</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">doc</span> <span class="k">=&gt;</span> <span class="o">{</span>
+  /**
+   * This method segments an RDD of documents clustering the assigned (lat,lon) geo coordinates.
+   * The field parameter specifies the names of the lat &amp; lon coordinate fields 
+   */
+  def segmentByLocation(docs:RDD[(String,Map[String,String])],fields:Array[String],clusters:Int,iterations:Int):RDD[(Int,String,Map[String,String])] = {
+    /**
+     * Train model
+     */
+    val vectors = docs.map(doc =&gt; toVector(doc._2,fields))   
+    val model = KMeans.train(vectors, clusters, iterations)
+    /**
+     * Apply model
+     */
+    docs.map(doc =&gt; {
 
-      <span class="k">val</span> <span class="n">vector</span> <span class="k">=</span> <span class="n">toVector</span><span class="o">(</span><span class="n">doc</span><span class="o">.</span><span class="n">_2</span><span class="o">,</span><span class="n">fields</span><span class="o">)</span>
-      <span class="o">(</span><span class="n">model</span><span class="o">.</span><span class="n">predict</span><span class="o">(</span><span class="n">vector</span><span class="o">),</span><span class="n">doc</span><span class="o">.</span><span class="n">_1</span><span class="o">,</span><span class="n">doc</span><span class="o">.</span><span class="n">_2</span><span class="o">)</span>
+      val vector = toVector(doc._2,fields)
+      (model.predict(vector),doc._1,doc._2)
 
-    <span class="o">})</span>
+    })
 
-  <span class="o">}</span>
+  }
 
-  <span class="k">private</span> <span class="k">def</span> <span class="n">toVector</span><span class="o">(</span><span class="n">data</span><span class="k">:</span><span class="kt">Map</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">String</span><span class="o">],</span> <span class="n">fields</span><span class="k">:</span><span class="kt">Array</span><span class="o">[</span><span class="kt">String</span><span class="o">])</span><span class="k">:</span><span class="kt">Vector</span> <span class="o">=</span> <span class="o">{</span>
+  private def toVector(data:Map[String,String], fields:Array[String]):Vector = {
 
-    <span class="k">val</span> <span class="n">lat</span> <span class="k">=</span> <span class="n">data</span><span class="o">(</span><span class="n">fields</span><span class="o">(</span><span class="mi">0</span><span class="o">)).</span><span class="n">toDouble</span>
-    <span class="k">val</span> <span class="n">lon</span> <span class="k">=</span> <span class="n">data</span><span class="o">(</span><span class="n">fields</span><span class="o">(</span><span class="mi">1</span><span class="o">)).</span><span class="n">toDouble</span>
+    val lat = data(fields(0)).toDouble
+    val lon = data(fields(1)).toDouble
 
-    <span class="nc">Vectors</span><span class="o">.</span><span class="n">dense</span><span class="o">(</span><span class="nc">Array</span><span class="o">(</span><span class="n">lat</span><span class="o">,</span><span class="n">lon</span><span class="o">))</span>
+    Vectors.dense(Array(lat,lon))
 
-  <span class="o">}</span>
+  }
 
-<span class="o">}</span>
-</pre></div>
+}
+</code></pre>
 
 <p>Clustering Elasticsearch data with K-Means is a first and simple example of how to immediately benefit from the integration with Spark. Other business cases may cover recommendations:</p>
 
@@ -149,6 +146,56 @@ of <a href="https://spark.apache.org/mllib/">MLlib</a> is used:</p>
 <li>
 <strong>Second</strong>, from this item similarities are calculated to provide a recommendation model.</li>
 </ul><p>For more information, please read <a href="https://github.com/skrusche63/spark-elastic/wiki/Item-Similarity-with-Spark">here</a>.</p>
+
+<h4>
+<a name="-insights-from-elasticsearch-with-sql" class="anchor" href="#-insights-from-elasticsearch-with-sql"><span class="octicon octicon-link"></span></a>
+<a name="1.1"></a> Insights from Elasticsearch with SQL</h4>
+
+<p><a href="https://spark.apache.org/sql/">Spark SQL</a> allows relational queries expressed in SQL to be executed using Spark. This enables to apply queries to Spark data structures and also to Spark data streams (see below).</p>
+
+<p>As SQL queries generate Spark data structures, a mixture of SQL and native Spark operations is also possible, thus providing a sophisticated mechanism to compute valuable insight from data in real-time.</p>
+
+<p>The code example below illustrates how to apply SQL queries on a Spark data structure (RDD) and provide further insight by mixing with native Spark operations.</p>
+
+<pre><code>import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+
+import org.apache.spark.rdd.RDD
+
+import org.apache.spark.sql.SQLContext
+
+import org.json4s._
+
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization.write
+
+object EsInsight {
+
+  implicit val formats = Serialization.formats(NoTypeHints)
+
+  def insight(sc:SparkContext, docs:RDD[(String,Map[String,String])]) {
+
+    val sqlc = new SQLContext(sc)
+
+    /**
+     * Convert docs into JSON
+     */
+    val jdocs = docs.map(valu =&gt; {
+      String.format("""{"id":"%s","doc":%s}""", valu._1, write(valu._2))
+    })
+
+    val table = sqlc.jsonRDD(jdocs)
+    table.registerAsTable("docs")
+    /**
+     * Mixing SQL and other Spark operations
+     */
+    val subjects = sqlc.sql("SELECT doc.subject FROM docs").filter(row =&gt; row.getString(0).contains("Re"))    
+    subjects.foreach(subject =&gt; println(subject))
+
+  }
+
+}
+</code></pre>
 
 <hr><h3>
 <a name="-write-to-elasticsearch-using-kafka-and-spark-streaming" class="anchor" href="#-write-to-elasticsearch-using-kafka-and-spark-streaming"><span class="octicon octicon-link"></span></a>
@@ -189,19 +236,19 @@ applications to the Web.</p>
 
 <p>The code example below illustrates that such an integration pattern may be implemented with just a few lines of Scala code:</p>
 
-<div class="highlight highlight-Scala"><pre>
-<span class="k">val</span> <span class="n">stream</span> <span class="k">=</span> <span class="nc">KafkaUtils</span><span class="o">.</span><span class="n">createStream</span><span class="o">[</span><span class="kt">String</span>,<span class="kt">Message</span>,<span class="kt">StringDecoder</span>,<span class="kt">MessageDecoder</span><span class="o">](</span><span class="n">ssc</span><span class="o">,</span> <span class="n">kafkaConfig</span><span class="o">,</span> <span class="n">kafkaTopics</span><span class="o">,</span> <span class="nc">StorageLevel</span><span class="o">.</span><span class="nc">MEMORY_AND_DISK</span><span class="o">).</span><span class="n">map</span><span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">_2</span><span class="o">)</span>
-<span class="n">stream</span><span class="o">.</span><span class="n">foreachRDD</span><span class="o">(</span><span class="n">messageRDD</span> <span class="k">=&gt;</span> <span class="o">{</span>
-  <span class="cm">/**</span>
-<span class="cm">   * Live indexing of Kafka messages; note, that this is also</span>
-<span class="cm">   * an appropriate place to integrate further message analysis</span>
-<span class="cm">   */</span>
-  <span class="k">val</span> <span class="n">messages</span> <span class="k">=</span> <span class="n">messageRDD</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">prepare</span><span class="o">)</span>
-  <span class="n">messages</span><span class="o">.</span><span class="n">saveAsNewAPIHadoopFile</span><span class="o">(</span><span class="s">"-"</span><span class="o">,</span><span class="n">classOf</span><span class="o">[</span><span class="kt">NullWritable</span><span class="o">],</span><span class="n">classOf</span><span class="o">[</span><span class="kt">MapWritable</span><span class="o">],</span><span class="n">classOf</span><span class="o">[</span><span class="kt">EsOutputFormat</span><span class="o">],</span><span class="n">esConfig</span><span class="o">)</span>    
+<pre><code>
+val stream = KafkaUtils.createStream[String,Message,StringDecoder,MessageDecoder](ssc, kafkaConfig, kafkaTopics, StorageLevel.MEMORY_AND_DISK).map(_._2)
+stream.foreachRDD(messageRDD =&gt; {
+  /**
+   * Live indexing of Kafka messages; note, that this is also
+   * an appropriate place to integrate further message analysis
+   */
+  val messages = messageRDD.map(prepare)
+  messages.saveAsNewAPIHadoopFile("-",classOf[NullWritable],classOf[MapWritable],classOf[EsOutputFormat],esConfig)    
 
-<span class="o">})</span>
+})
 
-</pre></div>
+</code></pre>
 
 <h4>
 <a name="-count-min-sketch-and-streaming" class="anchor" href="#-count-min-sketch-and-streaming"><span class="octicon octicon-link"></span></a>
@@ -213,49 +260,49 @@ Twitter.  </p>
 <p>Algebird brings, as the name indicates, algebraic algorithms to streaming data. An important representative is <a href="http://en.wikipedia.org/wiki/Count%E2%80%93min_sketch">Count-Min Sketch</a> which enables to compute the most 
 frequent items from streams in a certain time window. The code example below describes how to apply the CountMinSketchMonoid (Algebird) to compute the most frequent messages from a Kafka Stream with respect to the messages' classification: </p>
 
-<div class="highlight highlight-Scala"><pre>
-<span class="k">object</span> <span class="nc">EsCountMinSktech</span> <span class="o">{</span>
+<pre><code>
+object EsCountMinSktech {
 
-  <span class="k">def</span> <span class="n">findTopK</span><span class="o">(</span><span class="n">stream</span><span class="k">:</span><span class="kt">DStream</span><span class="o">[</span><span class="kt">Message</span><span class="o">])</span><span class="k">:</span><span class="kt">Seq</span><span class="o">[(</span><span class="kt">Long</span>,<span class="kt">Long</span><span class="o">)]</span> <span class="k">=</span> <span class="o">{</span>
+  def findTopK(stream:DStream[Message]):Seq[(Long,Long)] = {
 
-    <span class="k">val</span> <span class="nc">DELTA</span> <span class="k">=</span> <span class="mi">1</span><span class="n">E</span><span class="o">-</span><span class="mi">3</span>
-    <span class="k">val</span> <span class="nc">EPS</span>   <span class="k">=</span> <span class="mf">0.01</span>
+    val DELTA = 1E-3
+    val EPS   = 0.01
 
-    <span class="k">val</span> <span class="nc">SEED</span> <span class="k">=</span> <span class="mi">1</span>
-    <span class="k">val</span> <span class="nc">PERC</span> <span class="k">=</span> <span class="mf">0.001</span>
+    val SEED = 1
+    val PERC = 0.001
 
-    <span class="k">val</span> <span class="n">k</span> <span class="k">=</span> <span class="mi">5</span>
+    val k = 5
 
-    <span class="k">var</span> <span class="n">globalCMS</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">CountMinSketchMonoid</span><span class="o">(</span><span class="nc">DELTA</span><span class="o">,</span> <span class="nc">EPS</span><span class="o">,</span> <span class="nc">SEED</span><span class="o">,</span> <span class="nc">PERC</span><span class="o">).</span><span class="n">zero</span>
+    var globalCMS = new CountMinSketchMonoid(DELTA, EPS, SEED, PERC).zero
 
-    <span class="k">val</span> <span class="n">clases</span> <span class="k">=</span> <span class="n">stream</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">message</span> <span class="k">=&gt;</span> <span class="n">message</span><span class="o">.</span><span class="n">clas</span><span class="o">)</span>
-    <span class="k">val</span> <span class="n">approxTopClases</span> <span class="k">=</span> <span class="n">clases</span><span class="o">.</span><span class="n">mapPartitions</span><span class="o">(</span><span class="n">clases</span> <span class="k">=&gt;</span> <span class="o">{</span>
+    val clases = stream.map(message =&gt; message.clas)
+    val approxTopClases = clases.mapPartitions(clases =&gt; {
 
-      <span class="k">val</span> <span class="n">localCMS</span> <span class="k">=</span> <span class="k">new</span> <span class="nc">CountMinSketchMonoid</span><span class="o">(</span><span class="nc">DELTA</span><span class="o">,</span> <span class="nc">EPS</span><span class="o">,</span> <span class="nc">SEED</span><span class="o">,</span> <span class="nc">PERC</span><span class="o">)</span>
-      <span class="n">clases</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">clas</span> <span class="k">=&gt;</span> <span class="n">localCMS</span><span class="o">.</span><span class="n">create</span><span class="o">(</span><span class="n">clas</span><span class="o">))</span>
+      val localCMS = new CountMinSketchMonoid(DELTA, EPS, SEED, PERC)
+      clases.map(clas =&gt; localCMS.create(clas))
 
-    <span class="o">}).</span><span class="n">reduce</span><span class="o">(</span><span class="k">_</span> <span class="o">++</span> <span class="k">_</span><span class="o">)</span>
+    }).reduce(_ ++ _)
 
-    <span class="n">approxTopClases</span><span class="o">.</span><span class="n">foreach</span><span class="o">(</span><span class="n">rdd</span> <span class="k">=&gt;</span> <span class="o">{</span>
-      <span class="k">if</span> <span class="o">(</span><span class="n">rdd</span><span class="o">.</span><span class="n">count</span><span class="o">()</span> <span class="o">!=</span> <span class="mi">0</span><span class="o">)</span> <span class="n">globalCMS</span> <span class="o">++=</span> <span class="n">rdd</span><span class="o">.</span><span class="n">first</span><span class="o">()</span>
-    <span class="o">})</span>
+    approxTopClases.foreach(rdd =&gt; {
+      if (rdd.count() != 0) globalCMS ++= rdd.first()
+    })
 
-    <span class="cm">/**</span>
-<span class="cm">     * Retrieve approximate TopK classifiers from the provided messages</span>
-<span class="cm">     */</span>
-    <span class="k">val</span> <span class="n">globalTopK</span> <span class="k">=</span> <span class="n">globalCMS</span><span class="o">.</span><span class="n">heavyHitters</span><span class="o">.</span><span class="n">map</span><span class="o">(</span><span class="n">clas</span> <span class="k">=&gt;</span> <span class="o">(</span><span class="n">clas</span><span class="o">,</span> <span class="n">globalCMS</span><span class="o">.</span><span class="n">frequency</span><span class="o">(</span><span class="n">clas</span><span class="o">).</span><span class="n">estimate</span><span class="o">))</span>
-      <span class="cm">/*</span>
-<span class="cm">       * Retrieve the top k message classifiers: it may also be interesting to </span>
-<span class="cm">       * return the classifier frequency from this method, ignoring the line below</span>
-<span class="cm">       */</span>
-      <span class="o">.</span><span class="n">toSeq</span><span class="o">.</span><span class="n">sortBy</span><span class="o">(</span><span class="k">_</span><span class="o">.</span><span class="n">_2</span><span class="o">).</span><span class="n">reverse</span><span class="o">.</span><span class="n">slice</span><span class="o">(</span><span class="mi">0</span><span class="o">,</span> <span class="n">k</span><span class="o">)</span>
+    /**
+     * Retrieve approximate TopK classifiers from the provided messages
+     */
+    val globalTopK = globalCMS.heavyHitters.map(clas =&gt; (clas, globalCMS.frequency(clas).estimate))
+      /*
+       * Retrieve the top k message classifiers: it may also be interesting to 
+       * return the classifier frequency from this method, ignoring the line below
+       */
+      .toSeq.sortBy(_._2).reverse.slice(0, k)
 
-    <span class="n">globalTopK</span>
+    globalTopK
 
-  <span class="o">}</span>
-<span class="o">}</span>
+  }
+}
 
-</pre></div>
+</code></pre>
 
 <hr><h3>
 <a name="-technology-stack" class="anchor" href="#-technology-stack"><span class="octicon octicon-link"></span></a>
@@ -265,6 +312,7 @@ frequent items from streams in a certain time window. The code example below des
 <li><a href="http://scala-lang.org">Scala</a></li>
 <li><a href="http://kafka.apache.org/">Apache Kafka</a></li>
 <li><a href="http://spark.apache.org">Apache Spark</a></li>
+<li><a href="https://spark.apache.org/sql/">Spark SQL</a></li>
 <li><a href="https://spark.apache.org/streaming/">Spark Streaming</a></li>
 <li><a href="https://github.com/twitter/algebird">Twitter Algebird</a></li>
 <li><a href="http://elasticsearch.org">Elasticsearch</a></li>
