@@ -34,7 +34,7 @@ The figure shows the integration pattern for Elasticsearch and Spark from an arc
 The source code below describes a few lines of Scala, that are sufficient to read from Elasticsearch and provide data for further mining 
 and prediction tasks:
 
-```Scala
+```
 
 /**
  * Read from ES using inputformat from org.elasticsearch.hadoop;
@@ -56,7 +56,7 @@ val docs = source.map(hit => {
 #### <a name="1.1"></a> K-Means Segmentation by Geo Location
 
 From the data format extracted from Elasticsearch 
-```Scala 
+``` 
 RDD[(String,Map[String,String]
 ```
 it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). To this end, the [K-Means clustering](http://http://en.wikipedia.org/wiki/K-means_clustering) implementation 
@@ -108,6 +108,57 @@ Suppose Elasticsearch is used to index e-commerce transactions on a per user bas
 
 For more information, please read [here](https://github.com/skrusche63/spark-elastic/wiki/Item-Similarity-with-Spark).
 
+
+#### <a name="1.1"></a> Insights from Elasticsearch with SQL
+
+[Spark SQL](https://spark.apache.org/sql/) allows relational queries expressed in SQL to be executed using Spark. This enables to apply queries to Spark data structures and also to Spark data streams (see below).
+
+As SQL queries generate Spark data structures, a mixture of SQL and native Spark operations is also possible, thus providing a sophisticated mechanism to compute valuable insight from data in real-time.
+
+The code example below illustrates how to apply SQL queries on a Spark data structure (RDD) and provide further insight by mixing with native Spark operations.
+
+```
+import org.apache.spark.SparkContext
+import org.apache.spark.SparkContext._
+
+import org.apache.spark.rdd.RDD
+
+import org.apache.spark.sql.SQLContext
+
+import org.json4s._
+
+import org.json4s.native.Serialization
+import org.json4s.native.Serialization.write
+
+object EsInsight {
+
+  implicit val formats = Serialization.formats(NoTypeHints)
+
+  def insight(sc:SparkContext, docs:RDD[(String,Map[String,String])]) {
+    
+    val sqlc = new SQLContext(sc)
+
+    /**
+     * Convert docs into JSON
+     */
+    val jdocs = docs.map(valu => {
+      String.format("""{"id":"%s","doc":%s}""", valu._1, write(valu._2))
+    })
+
+    val table = sqlc.jsonRDD(jdocs)
+    table.registerAsTable("docs")
+  /**
+   * Mixing SQL and other Spark operations
+   */
+    val subjects = sqlc.sql("SELECT doc.subject FROM docs").filter(row => row.getString(0).contains("Re"))    
+    subjects.foreach(subject => println(subject))
+    
+  }
+  
+}
+```
+
+
 ***
 
 ### <a name="2"></a> Write to Elasticsearch using Kafka and Spark Streaming
@@ -147,7 +198,7 @@ applications to the Web.
 
 The code example below illustrates that such an integration pattern may be implemented with just a few lines of Scala code:
 
-```Scala
+```
 
 val stream = KafkaUtils.createStream[String,Message,StringDecoder,MessageDecoder](ssc, kafkaConfig, kafkaTopics, StorageLevel.MEMORY_AND_DISK).map(_._2)
 stream.foreachRDD(messageRDD => {
@@ -170,7 +221,7 @@ Twitter.
 Algebird brings, as the name indicates, algebraic algorithms to streaming data. An important representative is [Count-Min Sketch](http://en.wikipedia.org/wiki/Count%E2%80%93min_sketch) which enables to compute the most 
 frequent items from streams in a certain time window. The code example below describes how to apply the CountMinSketchMonoid (Algebird) to compute the most frequent messages from a Kafka Stream with respect to the messages' classification: 
 
-```Scala
+```
 
 object EsCountMinSktech {
     
