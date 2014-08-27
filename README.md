@@ -35,21 +35,10 @@ The source code below describes a few lines of Scala, that are sufficient to rea
 and prediction tasks:
 
 ```
-
-/**
- * Read from ES using inputformat from org.elasticsearch.hadoop;
- * note, that key [Text] specifies the document id (_id) and
- * value [MapWritable] the document as a field -> value map
- */
 val source = sc.newAPIHadoopRDD(conf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
 val docs = source.map(hit => {
-
-  val id = hit._1.toString()
-  val dc = toMap(hit._2)
-      
-  (id,dc)
-      
-}).collect
+  new EsDocument(hit._1.toString,toMap(hit._2))
+})
 
 ```
 
