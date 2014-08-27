@@ -39,7 +39,6 @@ val source = sc.newAPIHadoopRDD(conf, classOf[EsInputFormat[Text, MapWritable]],
 val docs = source.map(hit => {
   new EsDocument(hit._1.toString,toMap(hit._2))
 })
-
 ```
 
 #### <a name="1.1"></a> K-Means Segmentation by Geo Location
@@ -56,10 +55,6 @@ For segmentation, the [K-Means clustering](http://http://en.wikipedia.org/wiki/K
 of [MLlib](https://spark.apache.org/mllib/) is used:
 
 ```
-/**
- * Cluster extracted content from an Elasticsearch index by applying KMeans 
- * clustering algorithm from MLLib
- */
 def cluster(documents:RDD[EsDocument],esConf:Configuration):RDD[(Int,EsDocument)] =  {
   
   val fields = esConf.get("es.fields").split(",")
