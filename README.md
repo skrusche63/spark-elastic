@@ -17,7 +17,7 @@ more to an Enterprise Search Platform.
 
 ***
 
-### <a name="1"></a>Read from Elasticsearch using Spark
+### <a name="1"></a>Machine Learning with Elasticsearch
 
 Besides linguistic and semantic enrichment, for data in a search index there is an increasing demand to apply knowledge discovery and
 data mining techniques, and even predictive analytics to gain deeper insights into the data and further increase their business value.
