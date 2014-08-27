@@ -41,7 +41,7 @@ val docs = source.map(hit => {
 })
 ```
 
-#### <a name="1.1"></a> K-Means Segmentation by Geo Location
+#### <a name="1.1"></a>Document Segmentation with KMeans
 
 From the data format extracted from Elasticsearch `RDD[EsDocument]` it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). 
 
