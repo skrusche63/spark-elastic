@@ -15,7 +15,7 @@ Spark is an in-memory processing framework and outperforms Hadoop up to a factor
 Combining Apache Spark and Elasticsearch brings the power of machine learning, real-time data sources such as social media and 
 more to an Enterprise Search Platform. 
 
-***
+---
 
 ### <a name="1"></a>Machine Learning with Elasticsearch
 
@@ -129,10 +129,9 @@ def query(documents:RDD[String], esConfig:Configuration):SchemaRDD =  {
 }
 ```
 
+---
 
-***
-
-### <a name="2"></a> Write to Elasticsearch using Kafka and Spark Streaming
+### <a name="2"></a>Real-Time Stream Processing and Elasticsearch
 
 Real-time analytics is a very popular topic with a wide range of application areas:
 
@@ -170,7 +169,6 @@ applications to the Web.
 The code example below illustrates that such an integration pattern may be implemented with just a few lines of Scala code:
 
 ```
-
 val stream = KafkaUtils.createStream[String,Message,StringDecoder,MessageDecoder](ssc, kafkaConfig, kafkaTopics, StorageLevel.MEMORY_AND_DISK).map(_._2)
 stream.foreachRDD(messageRDD => {
   /**
@@ -184,9 +182,9 @@ stream.foreachRDD(messageRDD => {
 
 ```
 
-#### <a name="2.1"></a> Count-Min Sketch and Streaming
+#### <a name="2.1"></a> Most Frequent Items from Streams
 
-Using the architecture as illustrated above not only enables to apply Spark to data streams. It also open real-time streams to other data processing libraries such as [Algebird](https://github.com/twitter/algebird) from 
+Using the architecture as illustrated above not only enables to apply Spark to data streams. It also opens real-time streams to other data processing libraries such as [Algebird](https://github.com/twitter/algebird) from 
 Twitter.  
 
 Algebird brings, as the name indicates, algebraic algorithms to streaming data. An important representative is [Count-Min Sketch](http://en.wikipedia.org/wiki/Count%E2%80%93min_sketch) which enables to compute the most 
