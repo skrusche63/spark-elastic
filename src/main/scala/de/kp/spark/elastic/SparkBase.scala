@@ -27,7 +27,7 @@ import scala.collection.JavaConversions._
 
 trait SparkBase {
   
-  protected def createLocalCtx(name:String,config:Configuration):SparkContext = {
+  protected def createCtxLocal(name:String,config:Configuration):SparkContext = {
 
     /* Extract Spark related properties from the Hadoop configuration */
     val iterator = config.iterator()
@@ -56,6 +56,11 @@ trait SparkBase {
         
 	new SparkContext(conf)
 		
+  }
+
+  protected def createCtxRemote(name:String,config:Configuration):SparkContext = {
+    /* Not implemented yet */
+    null
   }
 
 }

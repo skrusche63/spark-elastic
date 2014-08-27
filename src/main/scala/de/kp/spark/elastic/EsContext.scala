@@ -25,6 +25,9 @@ import org.apache.spark.rdd.RDD
 
 import org.apache.spark.sql.{SchemaRDD,SQLContext}
 
+import org.apache.spark.mllib.clustering.KMeans
+import org.apache.spark.mllib.linalg.{Vector,Vectors}
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.{ArrayWritable,MapWritable,NullWritable,Text}
 
@@ -45,16 +48,23 @@ case class EsDocument(id:String,data:Map[String,String])
  */
 class ElasticContext(sparkConf:Configuration) extends SparkBase {
   
-  private val sc = createLocalCtx("ElasticContext",sparkConf)
+  private val sc = createCtxLocal("ElasticContext",sparkConf)
   private val sqlc = new SQLContext(sc)
 
+  /**
+   * EsDocument is the common format to be used if machine learning algorithms
+   * have to be applied to the extracted content of an Elasticseach index
+   */
   def documents(esConf:Configuration):RDD[EsDocument] = {
     
     val source = sc.newAPIHadoopRDD(esConf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
     source.map(hit => new EsDocument(hit._1.toString,toMap(hit._2)))
     
   }
-  
+  /**
+   * Json format is the common format to be used if SQL queries have to be applied
+   * to the extracted content of an Elasticsearch index
+   */
   def documentsAsJson(esConf:Configuration):RDD[String] = {
     
     implicit val formats = DefaultFormats    
@@ -69,7 +79,30 @@ class ElasticContext(sparkConf:Configuration) extends SparkBase {
     
   }
 
-  def queryTable(documents:RDD[String],esConfig:Configuration):SchemaRDD =  {
+  /**
+   * Cluster extracted content from an Elasticsearch index by applying KMeans 
+   * clustering algorithm from MLLib
+   */
+  def cluster(documents:RDD[EsDocument],esConf:Configuration):RDD[(Int,EsDocument)] =  {
+    
+    val fields = esConf.get("es.fields").split(",")
+    val vectors = documents.map(doc => toVector(doc.data,fields))   
+
+    val clusters = esConf.get("es.clusters").toInt
+    val iterations = esConf.get("es.iterations").toInt
+    
+    /* Train model */
+    val model = KMeans.train(vectors, clusters, iterations)
+    
+    /* Apply model */
+    documents.map(doc => (model.predict(toVector(doc.data,fields)),doc))
+    
+  }
+
+  /**
+   * Apply SQL statement to extracted content from an Elasticsearch index
+   */
+  def query(documents:RDD[String], esConfig:Configuration):SchemaRDD =  {
 
     val query = esConfig.get("es.sql")
     val name  = esConfig.get("es.table")
@@ -116,6 +149,13 @@ class ElasticContext(sparkConf:Configuration) extends SparkBase {
       
     m.toMap
     
+  }
+
+  private def toVector(data:Map[String,String], fields:Array[String]):Vector = {
+    
+    val features = data.filter(kv => fields.contains(kv._1)).map(_._2.toDouble)      
+    Vectors.dense(features.toArray)
+   
   }
 
 }

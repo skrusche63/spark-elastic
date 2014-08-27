@@ -1,4 +1,4 @@
-package de.kp.spark.elastic
+package de.kp.spark.elastic.apps
 /* Copyright (c) 2014 Dr. Krusche & Partner PartG
 * 
 * This file is part of the Spark-ELASTIC project
@@ -19,11 +19,13 @@ package de.kp.spark.elastic
 */
 
 import org.apache.hadoop.conf.Configuration
+import de.kp.spark.elastic.ElasticContext
 
 /**
- * An example of how to read ES documents from Spark using org.elasticsearch.hadoop 
+ * An example of how to extract documents from Elasticsearch
+ * and apply a simple SQL statement to the documents
  */
-object EsSparkApp {
+object InsightApp {
 
   def main(args:Array[String]) {
 
@@ -58,7 +60,7 @@ object EsSparkApp {
      * thereby mixing SQL and other Spark operations
      */
     val documents = es.documentsAsJson(esConf)
-    val subjects = es.queryTable(documents, esConf).filter(row => row.getString(0).contains("Re"))    
+    val subjects = es.query(documents, esConf).filter(row => row.getString(0).contains("Re"))    
 
     subjects.foreach(subject => println(subject))
 
@@ -68,6 +70,5 @@ object EsSparkApp {
     es.shutdown
     
   }
- 
-}
 
+}
