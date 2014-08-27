@@ -18,11 +18,6 @@ package de.kp.spark.elastic
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-import org.apache.spark.{SparkConf, SparkContext}
-import org.apache.spark.SparkContext._
-
-import org.apache.spark.serializer.KryoSerializer
-
 import org.apache.hadoop.conf.Configuration
 
 /**
@@ -34,49 +29,45 @@ object EsSparkApp {
 
     val start = System.currentTimeMillis()
  
-    val sc = createCtx()
-    /**
-     *  Configure access parameters
-     */	
-    val conf = new Configuration()                          
-
-    conf.set("es.nodes","localhost")
-    conf.set("es.port","9200")
-    
-    conf.set("es.resource", "enron/mails")                
-    conf.set("es.query", "?q=*:*")                          
-
-    /**
-     * Read from ES and provide some insight with Spark & SparkSQL
+    /*
+     * Spark specific configuration
      */
-    val docs = EsReader.read(sc,conf)
-    EsInsight.insight(sc, docs)
+    val sparkConf = new Configuration()
+
+    sparkConf.set("spark.executor.memory","1g")
+	sparkConf.set("spark.kryoserializer.buffer.mb","256")
+
+	val es = new ElasticContext(sparkConf)
+
+    /*
+     * Elasticsearch specific configuration
+     */
+    val esConf = new Configuration()                          
+
+    esConf.set("es.nodes","localhost")
+    esConf.set("es.port","9200")
     
+    esConf.set("es.resource", "enron/mails")                
+    esConf.set("es.query", "?q=*:*")                          
+
+    esConf.set("es.table", "docs")
+    esConf.set("es.sql", "select subject from docs")
+    
+    /*
+     * Read from ES and provide some insight with Spark & SparkSQL,
+     * thereby mixing SQL and other Spark operations
+     */
+    val documents = es.documentsAsJson(esConf)
+    val subjects = es.queryTable(documents, esConf).filter(row => row.getString(0).contains("Re"))    
+
+    subjects.foreach(subject => println(subject))
+
     val end = System.currentTimeMillis()
     println("Total time: " + (end-start) + " ms")
     
-    sc.stop
+    es.shutdown
     
   }
-  
-  private def createCtx():SparkContext = {
-
-	System.setProperty("spark.executor.memory", "1g")
-		
-	val runtime = Runtime.getRuntime()
-	runtime.gc()
-		
-	val cores = runtime.availableProcessors()
-		
-	val conf = new SparkConf()
-	conf.setMaster("local["+cores+"]")
-		
-	conf.setAppName("EsSparkApp");
-    conf.set("spark.serializer", classOf[KryoSerializer].getName)		
-        
-	new SparkContext(conf)
-		
-  }
-
+ 
 }
 

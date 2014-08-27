@@ -27,7 +27,7 @@ object EsNPref {
 
     val transactions = docs.map(doc => {
       /**
-       * Each document (doc) represents an ecommerce transaction per use
+       * Each document (doc) represents an ecommerce transaction per user
        */
       val user = doc._2(fields(0))
       val line = doc._2(fields(1))
@@ -45,10 +45,10 @@ object EsNPref {
      * STEP #1
      * 
      * Compute the total number of transactions per user. The transactions are
-     * grouped by user (valu._1) and then mapped onto number of transactions
+     * grouped by user (_._1) and then mapped onto number of transactions
      * per user
      */
-    val total = transactions.groupBy(valu => valu._1).map(grouped => (grouped._1, grouped._2.size))    
+    val total = transactions.groupBy(_._1).map(grouped => (grouped._1, grouped._2.size))    
     /**
      * STEP #2
      * 

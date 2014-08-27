@@ -23,35 +23,72 @@ import org.apache.spark.SparkContext._
 
 import org.apache.spark.rdd.RDD
 
+import org.apache.spark.sql.{SchemaRDD,SQLContext}
+
 import org.apache.hadoop.conf.Configuration
 import org.apache.hadoop.io.{ArrayWritable,MapWritable,NullWritable,Text}
 
 import org.elasticsearch.hadoop.mr.EsInputFormat
 
+import org.json4s.native.Serialization.write
+import org.json4s.DefaultFormats
+
 import scala.collection.JavaConversions._
 
-object EsReader {
-    
-  /**
-   * Read from ES using inputformat from org.elasticsearch.hadoop;
-   * note, that key [Text] specifies the document id (_id) and
-   * value [MapWritable] the document as a field -> value map
-   */
-  def read(sc:SparkContext,conf:Configuration):RDD[(String,Map[String,String])] = {
-    
-    val source = sc.newAPIHadoopRDD(conf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
-    val docs = source.map(hit => {
+case class EsDocument(id:String,data:Map[String,String])
 
-      val id = hit._1.toString()
-      val dc = toMap(hit._2)
-      
-      (id,dc)
-      
+/**
+ * ElasticContext supports access to Elasticsearch from Apache Spark using the library
+ * from org.elasticsearch.hadoop. For read requests, the [Text] specifies the _id field
+ * from Elasticsearch, and [MapWritable] specifies a (field,value) map
+ * 
+ */
+class ElasticContext(sparkConf:Configuration) extends SparkBase {
+  
+  private val sc = createLocalCtx("ElasticContext",sparkConf)
+  private val sqlc = new SQLContext(sc)
+
+  def documents(esConf:Configuration):RDD[EsDocument] = {
+    
+    val source = sc.newAPIHadoopRDD(esConf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
+    source.map(hit => new EsDocument(hit._1.toString,toMap(hit._2)))
+    
+  }
+  
+  def documentsAsJson(esConf:Configuration):RDD[String] = {
+    
+    implicit val formats = DefaultFormats    
+    
+    val source = sc.newAPIHadoopRDD(esConf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
+    val docs = source.map(hit => {
+      val doc = Map("ident" -> hit._1.toString()) ++ toMap(hit._2)
+      write(doc)      
     })
     
     docs
     
   }
+
+  def queryTable(documents:RDD[String],esConfig:Configuration):SchemaRDD =  {
+
+    val query = esConfig.get("es.sql")
+    val name  = esConfig.get("es.table")
+    
+    val table = sqlc.jsonRDD(documents)
+    table.registerAsTable(name)
+
+    sqlc.sql(query)   
+
+  }
+
+  /**
+   * Wrapper to stop SparkContext
+   */
+  def shutdown = sc.stop
+  /**
+   * Wrapper to get SparkContext from ElasticContext
+   */
+  def sparkContext = sc
   
   /**
    * A helper method to convert a MapWritable into a Map
@@ -80,5 +117,5 @@ object EsReader {
     m.toMap
     
   }
-  
+
 }
