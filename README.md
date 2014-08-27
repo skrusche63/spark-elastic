@@ -91,43 +91,41 @@ As SQL queries generate Spark data structures, a mixture of SQL and native Spark
 The code example below illustrates how to apply SQL queries on a Spark data structure (RDD) and provide further insight by mixing with native Spark operations.
 
 ```
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
+/*
+ * Elasticsearch specific configuration
+ */
+val esConf = new Configuration()                          
 
-import org.apache.spark.rdd.RDD
-
-import org.apache.spark.sql.SQLContext
-
-import org.json4s._
-
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization.write
-
-object EsInsight {
-
-  implicit val formats = Serialization.formats(NoTypeHints)
-
-  def insight(sc:SparkContext, docs:RDD[(String,Map[String,String])]) {
+esConf.set("es.nodes","localhost")
+esConf.set("es.port","9200")
     
-    val sqlc = new SQLContext(sc)
+esConf.set("es.resource", "enron/mails")                
+esConf.set("es.query", "?q=*:*")                          
 
-    /**
-     * Convert docs into JSON
-     */
-    val jdocs = docs.map(valu => {
-      String.format("""{"id":"%s","doc":%s}""", valu._1, write(valu._2))
-    })
+esConf.set("es.table", "docs")
+esConf.set("es.sql", "select subject from docs")
 
-    val table = sqlc.jsonRDD(jdocs)
-    table.registerAsTable("docs")
-    /**
-     * Mixing SQL and other Spark operations
-     */
-    val subjects = sqlc.sql("SELECT doc.subject FROM docs").filter(row => row.getString(0).contains("Re"))    
-    subjects.foreach(subject => println(subject))
+...
+
+/*
+ * Read from ES and provide some insight with Spark & SparkSQL,
+ * thereby mixing SQL and other Spark operations
+ */
+val documents = es.documentsAsJson(esConf)
+val subjects = es.query(documents, esConf).filter(row => row.getString(0).contains("Re"))    
+
+...
+
+def query(documents:RDD[String], esConfig:Configuration):SchemaRDD =  {
+
+  val query = esConfig.get("es.sql")
+  val name  = esConfig.get("es.table")
     
-  }
-  
+  val table = sqlc.jsonRDD(documents)
+  table.registerAsTable(name)
+
+  sqlc.sql(query)   
+
 }
 ```
 
