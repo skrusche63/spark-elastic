@@ -15,9 +15,9 @@ Spark is an in-memory processing framework and outperforms Hadoop up to a factor
 Combining Apache Spark and Elasticsearch brings the power of machine learning, real-time data sources such as social media and 
 more to an Enterprise Search Platform. 
 
-***
+---
 
-### <a name="1"></a>Read from Elasticsearch using Spark
+### <a name="1"></a>Machine Learning with Elasticsearch
 
 Besides linguistic and semantic enrichment, for data in a search index there is an increasing demand to apply knowledge discovery and
 data mining techniques, and even predictive analytics to gain deeper insights into the data and further increase their business value.
@@ -35,66 +35,40 @@ The source code below describes a few lines of Scala, that are sufficient to rea
 and prediction tasks:
 
 ```
-
-/**
- * Read from ES using inputformat from org.elasticsearch.hadoop;
- * note, that key [Text] specifies the document id (_id) and
- * value [MapWritable] the document as a field -> value map
- */
 val source = sc.newAPIHadoopRDD(conf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
 val docs = source.map(hit => {
-
-  val id = hit._1.toString()
-  val dc = toMap(hit._2)
-      
-  (id,dc)
-      
-}).collect
-
+  new EsDocument(hit._1.toString,toMap(hit._2))
+})
 ```
 
-#### <a name="1.1"></a> K-Means Segmentation by Geo Location
+#### <a name="1.1"></a>Document Segmentation with KMeans
 
-From the data format extracted from Elasticsearch `RDD[(String,Map[String,String]` it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). 
+From the data format extracted from Elasticsearch `RDD[EsDocument]` it is just a few lines of Scala to segment these documents with respect to their geo location (latitude,longitude). 
 
-To this end, the [K-Means clustering](http://http://en.wikipedia.org/wiki/K-means_clustering) implementation 
+From these data a heatmap can be drawn to visualize from which region of world most of the documents come from. The image below shows a multi-colored heatmap, where the colors red, yellow, green and blue indicate different heat ranges.
+
+![Heatmap from Piwik Data](https://raw.githubusercontent.com/skrusche63/spark-piwik/master/images/heatmap.png)
+
+Segmenting documents into specific target groups is not restricted their geo location. Time of the day, product or service categories, total revenue, and other parameters may be used.
+
+For segmentation, the [K-Means clustering](http://http://en.wikipedia.org/wiki/K-means_clustering) implementation 
 of [MLlib](https://spark.apache.org/mllib/) is used:
 
 ```
-
-object EsKMeans {
-
-  /**
-   * This method segments an RDD of documents clustering the assigned (lat,lon) geo coordinates.
-   * The field parameter specifies the names of the lat & lon coordinate fields 
-   */
-  def segmentByLocation(docs:RDD[(String,Map[String,String])],fields:Array[String],clusters:Int,iterations:Int):RDD[(Int,String,Map[String,String])] = {
-    /**
-     * Train model
-     */
-    val vectors = docs.map(doc => toVector(doc._2,fields))   
-    val model = KMeans.train(vectors, clusters, iterations)
-    /**
-     * Apply model
-     */
-    docs.map(doc => {
-      
-      val vector = toVector(doc._2,fields)
-      (model.predict(vector),doc._1,doc._2)
-      
-    })
-    
-  }
-
-  private def toVector(data:Map[String,String], fields:Array[String]):Vector = {
-       
-    val lat = data(fields(0)).toDouble
-    val lon = data(fields(1)).toDouble
-      
-    Vectors.dense(Array(lat,lon))
-   
-  }
+def cluster(documents:RDD[EsDocument],esConf:Configuration):RDD[(Int,EsDocument)] =  {
   
+  val fields = esConf.get("es.fields").split(",")
+  val vectors = documents.map(doc => toVector(doc.data,fields))   
+
+  val clusters = esConf.get("es.clusters").toInt
+  val iterations = esConf.get("es.iterations").toInt
+    
+  /* Train model */
+  val model = KMeans.train(vectors, clusters, iterations)
+  
+  /* Apply model */
+  documents.map(doc => (model.predict(toVector(doc.data,fields)),doc))
+    
 }
 ```
 
@@ -117,50 +91,47 @@ As SQL queries generate Spark data structures, a mixture of SQL and native Spark
 The code example below illustrates how to apply SQL queries on a Spark data structure (RDD) and provide further insight by mixing with native Spark operations.
 
 ```
-import org.apache.spark.SparkContext
-import org.apache.spark.SparkContext._
+/*
+ * Elasticsearch specific configuration
+ */
+val esConf = new Configuration()                          
 
-import org.apache.spark.rdd.RDD
-
-import org.apache.spark.sql.SQLContext
-
-import org.json4s._
-
-import org.json4s.native.Serialization
-import org.json4s.native.Serialization.write
-
-object EsInsight {
-
-  implicit val formats = Serialization.formats(NoTypeHints)
-
-  def insight(sc:SparkContext, docs:RDD[(String,Map[String,String])]) {
+esConf.set("es.nodes","localhost")
+esConf.set("es.port","9200")
     
-    val sqlc = new SQLContext(sc)
+esConf.set("es.resource", "enron/mails")                
+esConf.set("es.query", "?q=*:*")                          
 
-    /**
-     * Convert docs into JSON
-     */
-    val jdocs = docs.map(valu => {
-      String.format("""{"id":"%s","doc":%s}""", valu._1, write(valu._2))
-    })
+esConf.set("es.table", "docs")
+esConf.set("es.sql", "select subject from docs")
 
-    val table = sqlc.jsonRDD(jdocs)
-    table.registerAsTable("docs")
-    /**
-     * Mixing SQL and other Spark operations
-     */
-    val subjects = sqlc.sql("SELECT doc.subject FROM docs").filter(row => row.getString(0).contains("Re"))    
-    subjects.foreach(subject => println(subject))
+...
+
+/*
+ * Read from ES and provide some insight with Spark & SparkSQL,
+ * thereby mixing SQL and other Spark operations
+ */
+val documents = es.documentsAsJson(esConf)
+val subjects = es.query(documents, esConf).filter(row => row.getString(0).contains("Re"))    
+
+...
+
+def query(documents:RDD[String], esConfig:Configuration):SchemaRDD =  {
+
+  val query = esConfig.get("es.sql")
+  val name  = esConfig.get("es.table")
     
-  }
-  
+  val table = sqlc.jsonRDD(documents)
+  table.registerAsTable(name)
+
+  sqlc.sql(query)   
+
 }
 ```
 
+---
 
-***
-
-### <a name="2"></a> Write to Elasticsearch using Kafka and Spark Streaming
+### <a name="2"></a>Real-Time Stream Processing and Elasticsearch
 
 Real-time analytics is a very popular topic with a wide range of application areas:
 
@@ -198,7 +169,6 @@ applications to the Web.
 The code example below illustrates that such an integration pattern may be implemented with just a few lines of Scala code:
 
 ```
-
 val stream = KafkaUtils.createStream[String,Message,StringDecoder,MessageDecoder](ssc, kafkaConfig, kafkaTopics, StorageLevel.MEMORY_AND_DISK).map(_._2)
 stream.foreachRDD(messageRDD => {
   /**
@@ -212,9 +182,9 @@ stream.foreachRDD(messageRDD => {
 
 ```
 
-#### <a name="2.1"></a> Count-Min Sketch and Streaming
+#### <a name="2.1"></a> Most Frequent Items from Streams
 
-Using the architecture as illustrated above not only enables to apply Spark to data streams. It also open real-time streams to other data processing libraries such as [Algebird](https://github.com/twitter/algebird) from 
+Using the architecture as illustrated above not only enables to apply Spark to data streams. It also opens real-time streams to other data processing libraries such as [Algebird](https://github.com/twitter/algebird) from 
 Twitter.  
 
 Algebird brings, as the name indicates, algebraic algorithms to streaming data. An important representative is [Count-Min Sketch](http://en.wikipedia.org/wiki/Count%E2%80%93min_sketch) which enables to compute the most 
