@@ -48,7 +48,7 @@ case class EsDocument(id:String,data:Map[String,String])
  */
 class ElasticContext(sparkConf:Configuration) extends SparkBase {
   
-  private val sc = createCtxLocal("ElasticContext",sparkConf)
+  private val sc = createSCLocal("ElasticContext",sparkConf)
   private val sqlc = new SQLContext(sc)
 
   /**

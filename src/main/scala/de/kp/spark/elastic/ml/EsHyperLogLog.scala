@@ -22,47 +22,41 @@ import com.twitter.algebird._
 import org.apache.spark.streaming.dstream.DStream
 
 import de.kp.spark.elastic.stream.Message
+import java.nio.ByteBuffer
 
-/**
- * Frequency Estimation
- */
-object EsCountMinSktech {
+object EsHyperLogLog {
+
+  def estimateCardinality(stream:DStream[Message]):Double = {
+
+    val BIT_SIZE = 12
     
-  def findTopK(stream:DStream[Message]):Seq[(Long,Long)] = {
-  
-    val DELTA = 1E-3
-    val EPS   = 0.01
-    
-    val SEED = 1
-    val PERC = 0.001
- 
-    val k = 5
-    
-    var globalCMS = new CountMinSketchMonoid(DELTA, EPS, SEED, PERC).zero
- 
     val clases = stream.map(message => message.clas)
-    val approxTopClases = clases.mapPartitions(clases => {
+    val approxClases = clases.mapPartitions(clases => {
       
-      val localCMS = new CountMinSketchMonoid(DELTA, EPS, SEED, PERC)
-      clases.map(clas => localCMS.create(clas))
-    
-    }).reduce(_ ++ _)
-
-    approxTopClases.foreach(rdd => {
-      if (rdd.count() != 0) globalCMS ++= rdd.first()
-    })
+      /* 12: Number of bits */
+      val hll = new HyperLogLogMonoid(12)
+      clases.map(clas => {
         
-    /**
-     * Retrieve approximate TopK classifiers from the provided messages
-     */
-    val globalTopK = globalCMS.heavyHitters.map(clas => (clas, globalCMS.frequency(clas).estimate))
-      /*
-       * Retrieve the top k message classifiers: it may also be interesting to 
-       * return the classifier frequency from this method, ignoring the line below
-       */
-      .toSeq.sortBy(_._2).reverse.slice(0, k)
-  
-    globalTopK
+        val bytes = ByteBuffer.allocate(8).putLong(clas).array()
+        hll(bytes)
+      
+      })
     
+    }).reduce(_ + _)
+
+    val hll = new HyperLogLogMonoid(BIT_SIZE)
+    var globalHll = hll.zero
+ 
+    approxClases.foreach(rdd => {
+      if (rdd.count() != 0) {
+        globalHll += rdd.first()
+      }
+    })
+ 
+    /*
+     * Approximate distinct clases in the observed messages
+     */
+    globalHll.estimatedSize
+
   }
 }

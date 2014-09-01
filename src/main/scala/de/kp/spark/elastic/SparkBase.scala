@@ -21,13 +21,29 @@ package de.kp.spark.elastic
 import org.apache.spark.{SparkConf,SparkContext}
 import org.apache.spark.serializer.KryoSerializer
 
+import org.apache.spark.streaming.{Seconds,StreamingContext}
+
 import org.apache.hadoop.conf.Configuration
 import scala.collection.JavaConversions._
 
-
 trait SparkBase {
   
-  protected def createCtxLocal(name:String,config:Configuration):SparkContext = {
+  protected def createSSCLocal(name:String,config:Configuration):StreamingContext = {
+
+    val sc = createSCLocal(name,config)
+    
+    /*
+     * Batch duration is the time duration spark streaming uses to 
+     * collect spark RDDs; with a duration of 5 seconds, for example
+     * spark streaming collects RDDs every 5 seconds, which then are
+     * gathered int RDDs    
+     */
+    val batch  = config.get("spark.batch.duration").toInt    
+    new StreamingContext(sc, Seconds(batch))
+
+  }
+  
+  protected def createSCLocal(name:String,config:Configuration):SparkContext = {
 
     /* Extract Spark related properties from the Hadoop configuration */
     val iterator = config.iterator()
@@ -58,7 +74,12 @@ trait SparkBase {
 		
   }
 
-  protected def createCtxRemote(name:String,config:Configuration):SparkContext = {
+  protected def createSSCRemote(name:String,config:Configuration):SparkContext = {
+    /* Not implemented yet */
+    null
+  }
+
+  protected def createSCRemote(name:String,config:Configuration):SparkContext = {
     /* Not implemented yet */
     null
   }

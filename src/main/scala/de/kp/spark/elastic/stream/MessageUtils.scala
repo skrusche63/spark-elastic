@@ -1,4 +1,4 @@
-package de.kp.spark.elastic.kafka
+package de.kp.spark.elastic.stream
   /* Copyright (c) 2014 Dr. Krusche & Partner PartG
 * 
 * This file is part of the Spark-ELASTIC project
