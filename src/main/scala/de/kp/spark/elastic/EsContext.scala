@@ -46,7 +46,7 @@ case class EsDocument(id:String,data:Map[String,String])
  * from Elasticsearch, and [MapWritable] specifies a (field,value) map
  * 
  */
-class ElasticContext(sparkConf:Configuration) extends SparkBase {
+class EsContext(sparkConf:Configuration) extends SparkBase {
   
   private val sc = createSCLocal("ElasticContext",sparkConf)
   private val sqlc = new SQLContext(sc)
@@ -79,23 +79,33 @@ class ElasticContext(sparkConf:Configuration) extends SparkBase {
     
   }
 
+  def documentsFromSpec(conf:Configuration):RDD[EsDocument] = {
+    
+    val fields = sc.broadcast(conf.get("es.fields").split(","))
+
+    val source = sc.newAPIHadoopRDD(conf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
+    source.map(hit => new EsDocument(hit._1.toString,toMap(hit._2,fields.value)))
+    
+  }
+
   /**
    * Cluster extracted content from an Elasticsearch index by applying KMeans 
    * clustering algorithm from MLLib
    */
-  def cluster(documents:RDD[EsDocument],esConf:Configuration):RDD[(Int,EsDocument)] =  {
+  def cluster(documents:RDD[EsDocument],conf:Configuration):RDD[(Int,EsDocument)] =  {
     
-    val fields = esConf.get("es.fields").split(",")
-    val vectors = documents.map(doc => toVector(doc.data,fields))   
+    val fields = sc.broadcast(conf.get("es.fields").split(","))
+ 
+    val vectors = documents.map(doc => toVector(doc.data,fields.value))   
 
-    val clusters = esConf.get("es.clusters").toInt
-    val iterations = esConf.get("es.iterations").toInt
+    val clusters = conf.get("es.clusters").toInt
+    val iterations = conf.get("es.iterations").toInt
     
     /* Train model */
     val model = KMeans.train(vectors, clusters, iterations)
     
     /* Apply model */
-    documents.map(doc => (model.predict(toVector(doc.data,fields)),doc))
+    documents.map(doc => (model.predict(toVector(doc.data,fields.value)),doc))
     
   }
 
@@ -148,6 +158,35 @@ class ElasticContext(sparkConf:Configuration) extends SparkBase {
     })
       
     m.toMap
+    
+  }
+  
+  /**
+   * A helper method to convert a MapWritable into a Map
+   * thereby selecting predefined fields
+   */
+  private def toMap(mw:MapWritable,fields:Array[String]):Map[String,String] = {
+      
+    val m = mw.map(e => {
+        
+      val k = e._1.toString        
+      val v = (if (e._2.isInstanceOf[Text]) e._2.toString()
+        else if (e._2.isInstanceOf[ArrayWritable]) {
+        
+          val array = e._2.asInstanceOf[ArrayWritable].get()
+          array.map(item => {
+            
+            (if (item.isInstanceOf[NullWritable]) "" else item.asInstanceOf[Text].toString)}).mkString(",")
+            
+        }
+        else "")
+        
+    
+      k -> v
+        
+    })
+      
+    m.filter(kv => fields.contains(kv._1)).toMap
     
   }
 

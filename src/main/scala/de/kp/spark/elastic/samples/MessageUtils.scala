@@ -1,5 +1,5 @@
 package de.kp.spark.elastic.samples
-  /* Copyright (c) 2014 Dr. Krusche & Partner PartG
+/* Copyright (c) 2014 Dr. Krusche & Partner PartG
 * 
 * This file is part of the Spark-ELASTIC project
 * (https://github.com/skrusche63/spark-elastic).

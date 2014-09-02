@@ -19,7 +19,7 @@ package de.kp.spark.elastic.apps
 */
 
 import org.apache.hadoop.conf.Configuration
-import de.kp.spark.elastic.ElasticContext
+import de.kp.spark.elastic.EsContext
 
 /**
  * An example of how to extract documents from Elasticsearch
@@ -27,7 +27,7 @@ import de.kp.spark.elastic.ElasticContext
  */
 object InsightApp {
 
-  def main(args:Array[String]) {
+  def run() {
 
     val start = System.currentTimeMillis()
  
@@ -39,7 +39,7 @@ object InsightApp {
     sparkConf.set("spark.executor.memory","1g")
 	sparkConf.set("spark.kryoserializer.buffer.mb","256")
 
-	val es = new ElasticContext(sparkConf)
+	val es = new EsContext(sparkConf)
 
     /*
      * Elasticsearch specific configuration
