@@ -1,4 +1,4 @@
-package de.kp.spark.elastic.stream
+package de.kp.spark.elastic.samples
 /* Copyright (c) 2014 Dr. Krusche & Partner PartG
 * 
 * This file is part of the Spark-ELASTIC project
@@ -22,6 +22,7 @@ import kafka.producer.{KeyedMessage,Producer,ProducerConfig}
 import kafka.message.DefaultCompressionCodec
 
 import java.lang.Thread
+
 import java.util.{Properties, Random, UUID}
 
 /**
@@ -99,7 +100,7 @@ object MessageGenerator {
     props.put("require.requred.acks",requestRequiredAcks.toString)
   
     props.put("client.id",clientId.toString)
-    props.put("serializer.class", "de.kp.spark.elastic.kafka.MessageEncoder")
+    props.put("serializer.class", "de.kp.spark.elastic.samples.MessageEncoder")
 
     val producer = new Producer[String, Message](new ProducerConfig(props))
 

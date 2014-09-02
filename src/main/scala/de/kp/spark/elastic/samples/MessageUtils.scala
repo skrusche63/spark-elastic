@@ -1,4 +1,4 @@
-package de.kp.spark.elastic.stream
+package de.kp.spark.elastic.samples
   /* Copyright (c) 2014 Dr. Krusche & Partner PartG
 * 
 * This file is part of the Spark-ELASTIC project
@@ -18,6 +18,7 @@ package de.kp.spark.elastic.stream
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
+import org.apache.hadoop.conf.{Configuration => HConf}
 import de.kp.spark.elastic.EsClient
 
 /**
@@ -43,11 +44,11 @@ object MessageEngine {
 
   private val schema = new MessageSchema()
 
-  def execute(action:String,settings:Map[String,String]) {
+  def execute(action:String,conf:HConf) {
     
     action match {
         
-      case "prepare" => prepare(settings)
+      case "prepare" => prepare(conf)
         
       case _ => {}
       
@@ -55,10 +56,10 @@ object MessageEngine {
     
   }
   
-  private def prepare(settings:Map[String,String]) {
+  private def prepare(conf:HConf) {
     
-    val index  = settings("es.index")
-    val server = settings("es.server")
+    val index  = conf.get("es.index")
+    val server = conf.get("es.server")
     
     /**
      * Create new index
@@ -69,7 +70,7 @@ object MessageEngine {
     /**
      * Create new schema
      */   
-    val server1 = List(server, index, settings("es.mapping")).foldRight("")(_ + "/" + _)
+    val server1 = List(server, index, conf.get("es.mapping")).foldRight("")(_ + "/" + _)
     client.post(server1 + "_mapping", es_CreateSchema.format(index, schema.mappings))
 
   }

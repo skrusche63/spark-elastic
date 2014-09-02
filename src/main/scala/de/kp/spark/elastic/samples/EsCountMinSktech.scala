@@ -1,4 +1,4 @@
-package de.kp.spark.elastic.ml
+package de.kp.spark.elastic.samples
 /* Copyright (c) 2014 Dr. Krusche & Partner PartG
 * 
 * This file is part of the Spark-ELASTIC project
@@ -18,10 +18,11 @@ package de.kp.spark.elastic.ml
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-import com.twitter.algebird._
-import org.apache.spark.streaming.dstream.DStream
+import scala.util.parsing.json._
 
-import de.kp.spark.elastic.stream.Message
+import com.twitter.algebird._
+
+import org.apache.spark.streaming.dstream.DStream
 
 /**
  * Frequency Estimation
@@ -65,4 +66,5 @@ object EsCountMinSktech {
     globalTopK
     
   }
+
 }

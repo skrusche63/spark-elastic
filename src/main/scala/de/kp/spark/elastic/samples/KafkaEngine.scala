@@ -1,4 +1,4 @@
-package de.kp.spark.elastic.stream
+package de.kp.spark.elastic.samples
 /* Copyright (c) 2014 Dr. Krusche & Partner PartG
 * 
 * This file is part of the Spark-ELASTIC project
@@ -18,31 +18,25 @@ package de.kp.spark.elastic.stream
 * If not, see <http://www.gnu.org/licenses/>.
 */
 
-import scala.util.parsing.json._
-
 import kafka.serializer.StringDecoder
-
-import org.apache.spark.SparkContext._
 
 import org.apache.spark.streaming._
 import org.apache.spark.streaming.StreamingContext._
-
 import org.apache.spark.streaming.{Seconds, StreamingContext}
-import org.apache.spark.streaming.dstream.DStream
-
-import org.apache.spark.rdd.RDD
-import org.apache.spark.storage.StorageLevel
 
 import org.apache.spark.streaming.kafka._
 
-import org.apache.hadoop.conf.{Configuration => HConf}
+import org.apache.spark.SparkContext._
+import org.apache.spark.storage.StorageLevel
+
 import org.apache.hadoop.io.{MapWritable,NullWritable,Text}
+import org.apache.hadoop.conf.{Configuration => HConf}
 
 import org.elasticsearch.hadoop.mr.EsOutputFormat
 
 import de.kp.spark.elastic.SparkBase
 
-class ElasticStream(conf:HConf) extends SparkBase with Serializable {
+class KafkaEngine(name:String,conf:HConf) extends SparkBase with Serializable {
 
   /* Elasticsearch configuration */	
   val ec = getEsConf(conf)               
@@ -52,22 +46,40 @@ class ElasticStream(conf:HConf) extends SparkBase with Serializable {
   
   def run() {
     
-    val ssc = createSSCLocal("ElasticStream",conf)
+    val ssc = createSSCLocal(name,conf)
 
-    /*
-     * The KafkaInputDStream returns a Tuple where only the second component
-     * hods the respective message; we therefore reduce to a DStream[String]
-     */
-    val stream = KafkaUtils.createStream[String,String,StringDecoder,StringDecoder](ssc,kc,topics,StorageLevel.MEMORY_AND_DISK).map(_._2)
-    stream.foreachRDD(rdd => {
-      val messages = rdd.map(prepare)
-      messages.saveAsNewAPIHadoopFile("-",classOf[NullWritable],classOf[MapWritable],classOf[EsOutputFormat],ec)          
+    val stream = KafkaUtils.createStream[String,Message,StringDecoder,MessageDecoder](ssc,kc,topics, StorageLevel.MEMORY_AND_DISK).map(_._2)
+    stream.foreachRDD(messageRDD => {
+      /**
+       * Live indexing of Kafka messages; note, that this is also
+       * an appropriate place to integrate further message analysis
+       */
+      val messages = messageRDD.map(prepare)
+      messages.saveAsNewAPIHadoopFile("-",classOf[NullWritable],classOf[MapWritable],classOf[EsOutputFormat],ec)    
+      
     })
     
     ssc.start()
     ssc.awaitTermination()    
 
   }
+  
+  private def prepare(msg:Message):(Object,Object) = {
+      
+    val m = MessageUtils.messageToMap(msg)
+
+    /**
+     * Prepare (Keywritable, ValueWritable)
+     */
+    val kw = NullWritable.get
+    
+    val vw = new MapWritable
+    for ((k, v) <- m) vw.put(new Text(k), new Text(v))
+    
+    (kw, vw)
+    
+  }
+
   
   private def getEsConf(config:HConf):HConf = {
     
@@ -97,21 +109,5 @@ class ElasticStream(conf:HConf) extends SparkBase with Serializable {
     (cfg,topics)
     
   }
-  
-  private def prepare(message:String):(Object,Object) = {
-      
-    val m = JSON.parseFull(message) match {
-      case Some(map) => map.asInstanceOf[Map[String,String]]
-      case None => Map.empty[String,String]
-    }
-
-    val kw = NullWritable.get
-    
-    val vw = new MapWritable
-    for ((k, v) <- m) vw.put(new Text(k), new Text(v))
-    
-    (kw, vw)
-    
-  }
-
+ 
 }

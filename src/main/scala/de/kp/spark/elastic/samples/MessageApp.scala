@@ -1,4 +1,4 @@
-package de.kp.spark.elastic.stream
+package de.kp.spark.elastic.samples
 /* Copyright (c) 2014 Dr. Krusche & Partner PartG
 * 
 * This file is part of the Spark-ELASTIC project
@@ -19,49 +19,48 @@ package de.kp.spark.elastic.stream
 */
 
 import java.util.UUID
+import org.apache.hadoop.conf.{Configuration => HConf}
 
 object MessageApp {
 
   val task = "index" // prepare
   
   def main(args:Array[String]) {
-       
-    val settings = Map(
-        
-      "es.nodes" -> "localhost",
-      "es.port"  -> "9200",
     
-      "es.resource" -> "kafka/messages",              
+    val conf = new HConf()
+    
+    conf.set("es.nodes","localhost")
+    conf.set("es.port","9200")
+    
+    conf.set("es.resource","kafka/messages")              
 
-      "es.index"   -> "kafka",
-      "es.mapping" -> "messages",
+    conf.set("es.index","kafka")
+    conf.set("es.mapping","messages")
         
-      "es.server"  -> "http://localhost:9200",
+    conf.set("es.server","http://localhost:9200")
 
-      "spark.master" -> "local",  
-      "spark.batch.duration" -> "15",
+    conf.set("spark.master","local")
+    conf.set("spark.batch.duration","15")
       
-      "kafka.topics"  -> "publisher",
-      "kafka.threads" -> "1",
+    conf.set("kafka.topics","publisher")
+    conf.set("kafka.threads","1")
       
-      "kafka.group" -> UUID.randomUUID().toString,
-      "kafka.zklist" -> "127.0.0.1:2181",
+    conf.set("kafka.group",UUID.randomUUID().toString)
+    conf.set("kafka.zklist","127.0.0.1:2181")
       
-      // in milliseconds
-      "kafka.timeout" -> "10000"
-      
-    )
+    // in milliseconds
+    conf.set("kafka.timeout","10000")
     
     task match {
       
       case "prepare" => 
     
         val action = "prepare"
-        MessageEngine.execute(action,settings)
+        MessageEngine.execute(action,conf)
       
       case "index" => 
     
-        val engine = new KafkaEngine(settings)
+        val engine = new KafkaEngine("KafkaEngine",conf)
         engine.run
 
       case _ => {}
