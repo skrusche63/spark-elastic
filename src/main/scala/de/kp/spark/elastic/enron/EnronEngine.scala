@@ -29,7 +29,7 @@ import org.json4s._
 import org.json4s.native.Serialization
 import org.json4s.native.Serialization.{read,write}
 
-import de.kp.spark.elastic.EsClient
+import de.kp.spark.elastic.EsHttpClient
 
 /**
  * Please note, that part of the functionality below is taken from
@@ -42,7 +42,7 @@ object EnronEngine {
   
   import concurrent.ExecutionContext.Implicits._
     
-  private val client = new EsClient()
+  private val client = new EsHttpClient()
 
   private val shards:Int   = 1
   private val replicas:Int = 1

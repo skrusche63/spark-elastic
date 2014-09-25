@@ -22,13 +22,23 @@ import akka.actor.ActorSystem
 
 import spray.http.{HttpRequest,HttpResponse}
 import spray.client.pipelining.{Get,Post,sendReceive }
- 
+
+import org.elasticsearch.client.transport.TransportClient
+import org.elasticsearch.common.transport.InetSocketTransportAddress
+
+import org.elasticsearch.transport.ConnectTransportException
+
 import scala.concurrent.Future
 import scala.util.{Success,Failure}
+
+case class EsConfig(
+  hosts:Seq[String],ports:Seq[Int]
+)
+
 /**
  * A Http client implementation based on Akka & Spray
  */
-class EsClient {
+class EsHttpClient {
   
   import concurrent.ExecutionContext.Implicits._
   
@@ -41,5 +51,31 @@ class EsClient {
   def post(url:String,payload:String):Future[HttpResponse] = pipeline(Post(url, payload))
   
   def shutdown = system.shutdown
+  
+}
+
+object EsTransportClient {
+
+  def apply(config:EsConfig):TransportClient = {
+  
+    val client = try {
+    
+      val transportClient = new TransportClient()
+    
+      (config.hosts zip config.ports) foreach { hp =>
+        transportClient.addTransportAddress(
+          new InetSocketTransportAddress(hp._1, hp._2))
+      }
+    
+      transportClient
+  
+    } catch {
+      case e: ConnectTransportException =>
+        throw new Exception(e.getMessage)
+    }
+
+    client
+    
+  }
   
 }

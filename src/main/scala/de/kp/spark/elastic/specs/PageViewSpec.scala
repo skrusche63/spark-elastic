@@ -30,7 +30,7 @@ object PageViewSpec {
   
   private def load() {
 
-    for (field <- spec.root \ "fieldspec") {
+    for (field <- spec.root \ "field") {
       
       val _name  = (field \ "@name").toString
       val _type  = (field \ "@type").toString

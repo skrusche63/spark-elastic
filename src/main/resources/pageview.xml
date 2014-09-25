@@ -1,0 +1,8 @@
+<fieldspec>
+	<field name="sessionid" type="String">sessionid</field>
+	<field name="timestamp" type="Long">timestamp</field>
+	<field name="userid" type="String">userid</field>
+    <field name="pageurl" type="String">pageurl</field>	
+    <field name="visittime" type="String">visittime</field>	
+    <field name="referrer" type="String">referrer</field>
+</fieldspec>

@@ -19,7 +19,7 @@ package de.kp.spark.elastic.samples
 */
 
 import org.apache.hadoop.conf.{Configuration => HConf}
-import de.kp.spark.elastic.EsClient
+import de.kp.spark.elastic.EsHttpClient
 
 /**
  * Please note, that part of the functionality below is taken from
@@ -32,7 +32,7 @@ object MessageEngine {
   
   import concurrent.ExecutionContext.Implicits._
     
-  private val client = new EsClient()
+  private val client = new EsHttpClient()
 
   private val shards:Int   = 1
   private val replicas:Int = 1

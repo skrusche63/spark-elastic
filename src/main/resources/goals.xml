@@ -1,0 +1,3 @@
+<goalspec>
+	<goal id="1">/shoppingCart,/checkOut,/signin,/signup,/billing,/confirmShipping,/placeOrder</goal>
+</goalspec>
