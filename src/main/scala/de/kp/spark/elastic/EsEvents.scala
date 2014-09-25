@@ -30,7 +30,7 @@ import scala.concurrent.{ExecutionContext,Future,Promise}
  */
 class EsEvents(client:Client,index:String,mapping:String) {
 
-  def insert(event:String)(implicit ec: ExecutionContext): Future[Either[String,String]] = {
+  def insert(event:String)(implicit ec:ExecutionContext): Future[Either[String,String]] = {
     
     val response = Promise[IndexResponse]
 
