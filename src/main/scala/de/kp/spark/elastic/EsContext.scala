@@ -28,7 +28,7 @@ import org.apache.spark.sql.{SchemaRDD,SQLContext}
 import org.apache.spark.mllib.clustering.KMeans
 import org.apache.spark.mllib.linalg.{Vector,Vectors}
 
-import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.conf.{Configuration => HadoopConfig}
 import org.apache.hadoop.io.{ArrayWritable,MapWritable,NullWritable,Text}
 
 import org.elasticsearch.hadoop.mr.EsInputFormat
@@ -46,7 +46,7 @@ case class EsDocument(id:String,data:Map[String,String])
  * from Elasticsearch, and [MapWritable] specifies a (field,value) map
  * 
  */
-class EsContext(sparkConf:Configuration) extends SparkBase {
+class EsContext(sparkConf:HadoopConfig) extends SparkBase {
   
   private val sc = createSCLocal("ElasticContext",sparkConf)
   private val sqlc = new SQLContext(sc)
@@ -55,7 +55,7 @@ class EsContext(sparkConf:Configuration) extends SparkBase {
    * EsDocument is the common format to be used if machine learning algorithms
    * have to be applied to the extracted content of an Elasticseach index
    */
-  def documents(esConf:Configuration):RDD[EsDocument] = {
+  def documents(esConf:HadoopConfig):RDD[EsDocument] = {
     
     val source = sc.newAPIHadoopRDD(esConf, classOf[EsInputFormat[Text, MapWritable]], classOf[Text], classOf[MapWritable])
     source.map(hit => new EsDocument(hit._1.toString,toMap(hit._2)))
@@ -65,7 +65,7 @@ class EsContext(sparkConf:Configuration) extends SparkBase {
    * Json format is the common format to be used if SQL queries have to be applied
    * to the extracted content of an Elasticsearch index
    */
-  def documentsAsJson(esConf:Configuration):RDD[String] = {
+  def documentsAsJson(esConf:HadoopConfig):RDD[String] = {
     
     implicit val formats = DefaultFormats    
     
@@ -79,7 +79,7 @@ class EsContext(sparkConf:Configuration) extends SparkBase {
     
   }
 
-  def documentsFromSpec(conf:Configuration):RDD[EsDocument] = {
+  def documentsFromSpec(conf:HadoopConfig):RDD[EsDocument] = {
     
     val fields = sc.broadcast(conf.get("es.fields").split(","))
 
@@ -92,7 +92,7 @@ class EsContext(sparkConf:Configuration) extends SparkBase {
    * Cluster extracted content from an Elasticsearch index by applying KMeans 
    * clustering algorithm from MLLib
    */
-  def cluster(documents:RDD[EsDocument],conf:Configuration):RDD[(Int,EsDocument)] =  {
+  def cluster(documents:RDD[EsDocument],conf:HadoopConfig):RDD[(Int,EsDocument)] =  {
     
     val fields = sc.broadcast(conf.get("es.fields").split(","))
  
@@ -112,7 +112,7 @@ class EsContext(sparkConf:Configuration) extends SparkBase {
   /**
    * Apply SQL statement to extracted content from an Elasticsearch index
    */
-  def query(documents:RDD[String], esConfig:Configuration):SchemaRDD =  {
+  def query(documents:RDD[String], esConfig:HadoopConfig):SchemaRDD =  {
 
     val query = esConfig.get("es.sql")
     val name  = esConfig.get("es.table")

@@ -12,8 +12,11 @@ Spark is an in-memory processing framework and outperforms Hadoop up to a factor
 * [Spark SQL](https://spark.apache.org/sql/), a unified access platform for structured big data,
 * [Spark Streaming](https://spark.apache.org/streaming/), a library to build scalable fault-tolerant streaming applications.
 
-Combining Apache Spark and Elasticsearch brings the power of machine learning, real-time data sources such as social media and 
-more to an Enterprise Search Platform. 
+If you are more interested in an Elasticsearch plugin-in that brings the power of [Predictiveworks.](http://predictiveworks.eu) to Elasticsearch,
+then please refer to [Elasticinsight.](http://elasticinsight.eu).
+
+Predictiveworks. is an ensemble of dedicated predictive engines that covers a wide range of today's analytics requirements from Association Analysis,
+to Context-Aware Recommendations up to Text Analysis. Elasticinsight. empowers Elasticsearch to seamlessly uses these multiple engines.
 
 ---
 

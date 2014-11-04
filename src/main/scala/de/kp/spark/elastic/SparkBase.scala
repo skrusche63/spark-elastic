@@ -23,12 +23,12 @@ import org.apache.spark.serializer.KryoSerializer
 
 import org.apache.spark.streaming.{Seconds,StreamingContext}
 
-import org.apache.hadoop.conf.Configuration
+import org.apache.hadoop.conf.{Configuration => HadoopConfig}
 import scala.collection.JavaConversions._
 
 trait SparkBase {
   
-  protected def createSSCLocal(name:String,config:Configuration):StreamingContext = {
+  protected def createSSCLocal(name:String,config:HadoopConfig):StreamingContext = {
 
     val sc = createSCLocal(name,config)
     
@@ -43,7 +43,7 @@ trait SparkBase {
 
   }
   
-  protected def createSCLocal(name:String,config:Configuration):SparkContext = {
+  protected def createSCLocal(name:String,config:HadoopConfig):SparkContext = {
 
     /* Extract Spark related properties from the Hadoop configuration */
     val iterator = config.iterator()
@@ -74,12 +74,12 @@ trait SparkBase {
 		
   }
 
-  protected def createSSCRemote(name:String,config:Configuration):SparkContext = {
+  protected def createSSCRemote(name:String,config:HadoopConfig):SparkContext = {
     /* Not implemented yet */
     null
   }
 
-  protected def createSCRemote(name:String,config:Configuration):SparkContext = {
+  protected def createSCRemote(name:String,config:HadoopConfig):SparkContext = {
     /* Not implemented yet */
     null
   }
