@@ -1,4 +1,4 @@
-![Dr.Krusche & Partner PartG](https://raw.github.com/skrusche63/spark-elastic/master/images/dr-kruscheundpartner_640.png)
+![Dr.Krusche & Partner PartG](https://raw.github.com/skrusche63/spark-elastic/master/images/dr_kruscheundpartner_640.png)
 
 ## Integration of Elasticsearch with Spark
 
